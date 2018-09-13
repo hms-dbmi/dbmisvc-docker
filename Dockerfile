@@ -1,13 +1,25 @@
-FROM python:3.6-slim
+FROM python:3.6-alpine AS builder
 
-RUN apt-get update \
-    && apt-get install -y --no-install-recommends \
-        nginx \
-        jq \
-        curl \
-        openssl \
-    && apt-get clean \
-    && rm -rf /var/lib/apt/lists/*
+# Install dependencies
+RUN apk add --update \
+    build-base \
+    g++
+
+# Install Python packages
+RUN pip install awscli boto3 shinto-cli dumb-init gunicorn
+
+FROM python:3.6-alpine
+
+RUN apk add --no-cache --update \
+    bash \
+    nginx \
+    curl \
+    openssl \
+    jq \
+  && rm -rf /var/cache/apk/*
+
+# Copy pip packages from builder
+COPY --from=builder /root/.cache /root/.cache
 
 # Install some pip packages
 RUN pip install awscli boto3 shinto-cli dumb-init gunicorn
