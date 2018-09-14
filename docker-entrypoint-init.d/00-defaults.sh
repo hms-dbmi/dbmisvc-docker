@@ -5,7 +5,7 @@ while read -r var value; do
 
     # Check if defined already
     if [ -z "${!var}" ]; then
-        (>&2 echo "$var will default to: $value")
+        echo "ENV: $var not defined, will default to: $value"
     fi
 
   eval `echo "export $var=\"${!var:-$value}\""`

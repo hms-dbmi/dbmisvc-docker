@@ -56,4 +56,5 @@ if [[ -n "$DBMI_CREATE_SSL" ]]; then
 fi
 
 # Setup the nginx and site configuration
+j2 /docker-entrypoint-templates.d/nginx.healthcheck.conf.j2 > /etc/nginx/conf.d/nginx.healthcheck.conf
 j2 /docker-entrypoint-templates.d/nginx.conf.j2 > /etc/nginx/nginx.conf

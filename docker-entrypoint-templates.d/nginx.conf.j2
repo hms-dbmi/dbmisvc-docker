@@ -44,6 +44,12 @@ http {
 	access_log /dev/stdout;
 	error_log /dev/stderr;
 
+	upstream gunicorn {
+
+        # for UNIX domain socket setups
+        server unix:/tmp/gunicorn.sock fail_timeout=0;
+    }
+
     server {
     {% if DBMI_SSL is defined and DBMI_SSL %}
 
@@ -58,30 +64,7 @@ http {
     {% endif %}
 
     {% if DBMI_HEALTHCHECK is defined and DBMI_HEALTHCHECK %}
-        location {{ DBMI_HEALTHCHECK_PATH }} {
-
-        {% if DBMI_LB is defined and DBMI_LB %}
-            # Only allow load balancer and local hosts
-            allow {{ DBMI_LB_SUBNET }};
-            allow 127.0.0.1;
-            deny all;
-        {% endif %}
-
-        {% if DBMI_APP_HEALTHCHECK_PATH is defined %}
-
-            # Proxy to the app's healthcheck endpoint
-            proxy_pass   http://localhost:{{ DBMI_GUNICORN_PORT }}{{ DBMI_APP_HEALTHCHECK_PATH }};
-
-        {% else %}
-
-            # Just return 200 to check on NGINX
-            return 200;
-
-        {% endif %}
-
-            # Redirect logs to keep actual logs clean
-            access_log /var/log/nginx/healthcheck.log;
-        }
+        include /etc/nginx/conf.d/nginx.healthcheck.conf;
     {% endif %}
 
         location / {
@@ -111,30 +94,7 @@ http {
     {% endif %}
 
     {% if DBMI_HEALTHCHECK is defined and DBMI_HEALTHCHECK %}
-        location {{ DBMI_HEALTHCHECK_PATH }} {
-
-        {% if DBMI_LB is defined and DBMI_LB %}
-            # Only allow load balancer and local hosts
-            allow {{ DBMI_LB_SUBNET }};
-            allow 127.0.0.1;
-            deny all;
-        {% endif %}
-
-        {% if DBMI_APP_HEALTHCHECK_PATH is defined %}
-
-            # Proxy to the app's healthcheck endpoint
-            proxy_pass   http://localhost:{{ DBMI_GUNICORN_PORT }}{{ DBMI_APP_HEALTHCHECK_PATH }};
-
-        {% else %}
-
-            # Just return 200 to check on NGINX
-            return 200;
-
-        {% endif %}
-
-            # Redirect logs to keep actual logs clean
-            access_log /var/log/nginx/healthcheck.log;
-        }
+        include /etc/nginx/conf.d/nginx.healthcheck.conf;
     {% endif %}
 
     {% if DBMI_LB is defined and DBMI_LB %}
@@ -179,7 +139,7 @@ http {
             proxy_set_header Host $http_host;
             proxy_redirect off;
 
-            proxy_pass   http://localhost:{{ DBMI_GUNICORN_PORT }};
+            proxy_pass   http://gunicorn;
         }
 
         client_max_body_size 4G;
