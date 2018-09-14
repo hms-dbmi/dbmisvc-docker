@@ -86,13 +86,13 @@ params_to_env_no_overwrite () {
 # Check environment for path or prefix or both
 if [[ -n $DBMI_PARAMETER_STORE_PREFIX ]]; then
 
-    (>&2 echo "Getting secrets for prefix: $DBMI_PARAMETER_STORE_PREFIX")
+    echo -e "Getting secrets for prefix: $DBMI_PARAMETER_STORE_PREFIX\n"
     if [[ -n $DBMI_PARAMETER_STORE_PRIORITY ]]; then
         # Run it
         params_to_env $DBMI_PARAMETER_STORE_PREFIX
     else
         # Run
-        (>&2 echo "Will preserve existing environment over values from Parameter Store")
+        echo -e "Will preserve existing environment over values from Parameter Store\n"
         params_to_env_no_overwrite $DBMI_PARAMETER_STORE_PREFIX
     fi
 fi
@@ -100,19 +100,19 @@ fi
 # Check environment for path or prefix or both
 if [[ -n $DBMI_PARAMETER_STORE_PATH ]]; then
 
-    (>&2 echo "Getting secrets for path: $DBMI_PARAMETER_STORE_PATH")
+    echo -e "Getting secrets for path: $DBMI_PARAMETER_STORE_PATH\n"
     if [[ -n $DBMI_PARAMETER_STORE_PRIORITY ]]; then
         # Run it
         params_to_env $DBMI_PARAMETER_STORE_PATH
     else
         # Run
-        (>&2 echo "Will preserve existing environment over values from Parameter Store")
+        echo -e "Will preserve existing environment over values from Parameter Store\n"
         params_to_env_no_overwrite $DBMI_PARAMETER_STORE_PATH
     fi
 fi
 
 if [[ -z $DBMI_PARAMETER_STORE_PATH && -z $DBMI_PARAMETER_STORE_PREFIX ]]; then
 
-    (>&2 echo "No path or prefix specified, nothing to do")
+    echo -e "No path or prefix specified, nothing to do\n"
 
 fi

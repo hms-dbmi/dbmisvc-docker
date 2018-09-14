@@ -1,4 +1,4 @@
-FROM python:3.6-alpine AS builder
+FROM python:3.6-alpine3.8 AS builder
 
 # Install dependencies
 RUN apk add --update \
@@ -8,7 +8,7 @@ RUN apk add --update \
 # Install Python packages
 RUN pip install awscli boto3 shinto-cli dumb-init gunicorn
 
-FROM python:3.6-alpine
+FROM python:3.6-alpine3.8
 
 RUN apk add --no-cache --update \
     bash \
@@ -36,5 +36,5 @@ RUN chmod a+x docker-entrypoint.sh
 
 ENTRYPOINT ["dumb-init", "/docker-entrypoint.sh"]
 
-CMD gunicorn ${DBMI_APP_WSGI}.wsgi:application -b 0.0.0.0:${DBMI_GUNICORN_PORT} \
+CMD gunicorn ${DBMI_APP_WSGI}.wsgi:application -b unix:/tmp/gunicorn.sock \
     --user ${DBMI_NGINX_USER} --group ${DBMI_NGINX_USER} --chdir=${DBMI_APP_ROOT}

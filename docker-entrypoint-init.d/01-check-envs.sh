@@ -12,3 +12,12 @@ if [ ! -z $DBMI_STATIC_FILES ]; then
 fi
 
 echo "Envs check passed!"
+
+# Check for debug mode
+if [ ! -z $DBMI_DEBUG ]; then
+
+    # Dump envs
+    echo -e "\nDBMI DEBUG: Dumping environment: \n"
+    printenv
+
+fi
