@@ -1,4 +1,4 @@
-FROM python:3.6-alpine3.8 AS builder
+FROM python:3.7-alpine AS builder
 
 # Install dependencies
 RUN apk add --update \
@@ -8,7 +8,7 @@ RUN apk add --update \
 # Install Python packages
 RUN pip install awscli boto3 shinto-cli dumb-init gunicorn
 
-FROM python:3.6-alpine3.8
+FROM python:3.7-alpine
 
 RUN apk add --no-cache --update \
     bash \
