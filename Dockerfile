@@ -1,5 +1,6 @@
-FROM python:3.6
+FROM python:3.7-slim
 
+# Install system packages
 RUN apt-get update \
     && apt-get install -y --no-install-recommends \
         nginx \
