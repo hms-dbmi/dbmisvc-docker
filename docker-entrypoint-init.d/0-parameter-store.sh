@@ -12,7 +12,7 @@ get_prefix_params() {
   response=$(
     aws ssm describe-parameters  \
       --parameter-filters Key=Name,Option=BeginsWith,Values=${DBMI_PARAMETER_STORE_PREFIX} \
-      --max-items 10 \
+      --max-items 50 \
       "$@"
   )
   params=$(echo "$response" | jq -r '.Parameters[]')
@@ -29,6 +29,7 @@ get_prefix_params() {
 
   next_token=$(echo "$response" | jq -re '.NextToken // empty')
   if [ ! -z "$next_token" ]; then
+    sleep 10
     get_prefix_params --starting-token "$next_token"
   fi
 }
@@ -53,6 +54,7 @@ get_path_params() {
 
   next_token=$(echo "$response" | jq -re '.NextToken // empty')
   if [ ! -z "$next_token" ]; then
+    sleep 10
     get_path_params --starting-token "$next_token"
   fi
 }
