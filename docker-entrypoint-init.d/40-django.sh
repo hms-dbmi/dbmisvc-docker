@@ -4,7 +4,7 @@
 if [[ -n $DBMI_APP_DB ]]; then
 
     # Run migrations
-    python ${DBMI_APP_ROOT}/manage.py migrate
+    python ${DBMI_APP_ROOT}/manage.py migrate --no-input
 
 fi
 
