@@ -1,4 +1,4 @@
-location ~ ^{{ DBMI_FILE_PROXY_PATH }}/(.*?)/(.*?)/(.*) {
+location ~ ^{{ DBMI_FILE_PROXY_PATH|default('/proxy') }}/(.*?)/(.*?)/(.*) {
     # Only allow internal redirects
     internal;
 
