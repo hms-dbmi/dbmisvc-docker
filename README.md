@@ -145,4 +145,3 @@ directly to the origin of the request.
 
 Your application accepts and passes through the download request, if allowed, and nginx handles the rest of the download
 on its own. Nifty!
-
