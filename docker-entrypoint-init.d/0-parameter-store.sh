@@ -12,7 +12,7 @@ get_prefix_params() {
   response=$(
     aws ssm describe-parameters  \
       --parameter-filters Key=Name,Option=BeginsWith,Values=${DBMI_PARAMETER_STORE_PREFIX} \
-      --max-items 50 \
+      --max-items 10 \
       "$@"
   )
   params=$(echo "$response" | jq -r '.Parameters[]')
