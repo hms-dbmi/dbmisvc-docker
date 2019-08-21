@@ -2,6 +2,7 @@
 
 # Set the default region
 export AWS_DEFAULT_REGION=${DBMI_AWS_REGION:=us-east-1}
+export AWS_SSM_ENDPOINT_URL=${DBMI_AWS_SM_ENDPOINT_URL:=https://secretsmanager.$AWS_DEFAULT_REGION.amazonaws.com}
 
 # Check environment for secrets ID
 if [[ -n $DBMI_SECRETS_MANAGER_ID ]]; then
@@ -11,7 +12,7 @@ if [[ -n $DBMI_SECRETS_MANAGER_ID ]]; then
         # Run it
         echo -e "Will overwrite any existing environment with values from Secrets Manager\n"
 
-        eval `aws secretsmanager get-secret-value \
+        eval `aws --endpoint-url $AWS_SSM_ENDPOINT_URL secretsmanager get-secret-value \
                 --secret-id ${DBMI_SECRETS_MANAGER_ID} \
                 | jq -r '.SecretString' | jq -r 'to_entries \
                 | .[] | "export \(.key | ascii_upcase)='\''\(.value)'\'';"'`
@@ -20,7 +21,7 @@ if [[ -n $DBMI_SECRETS_MANAGER_ID ]]; then
         # Run
         echo -e "Will preserve existing environment over values from Secrets Manager\n"
 
-        eval `aws secretsmanager get-secret-value \
+        eval `aws --endpoint-url $AWS_SSM_ENDPOINT_URL secretsmanager get-secret-value \
                 --secret-id ${DBMI_SECRETS_MANAGER_ID} \
                 | jq -r '.SecretString' | jq -r 'to_entries \
                 | .[] | "export \(.key | ascii_upcase)=${\(.key | ascii_upcase):-'\''\(.value)'\''};"'`
@@ -37,7 +38,7 @@ elif [[ -n $DBMI_SECRETS_MANAGER_IDS ]]; then
             # Run it
             echo -e "Will overwrite any existing environment with values from Secrets Manager\n"
 
-            eval `aws secretsmanager get-secret-value \
+            eval `aws --endpoint-url $AWS_SSM_ENDPOINT_URL secretsmanager get-secret-value \
                     --secret-id ${SM_ID} \
                     | jq -r '.SecretString' | jq -r 'to_entries \
                     | .[] | "export \(.key | ascii_upcase)='\''\(.value)'\'';"'`
@@ -46,7 +47,7 @@ elif [[ -n $DBMI_SECRETS_MANAGER_IDS ]]; then
             # Run
             echo -e "Will preserve existing environment over values from Secrets Manager\n"
 
-            eval `aws secretsmanager get-secret-value \
+            eval `aws --endpoint-url $AWS_SSM_ENDPOINT_URL secretsmanager get-secret-value \
                     --secret-id ${SM_ID} \
                     | jq -r '.SecretString' | jq -r 'to_entries \
                     | .[] | "export \(.key | ascii_upcase)=${\(.key | ascii_upcase):-'\''\(.value)'\''};"'`

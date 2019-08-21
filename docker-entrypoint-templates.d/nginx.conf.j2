@@ -108,10 +108,12 @@ http {
         real_ip_header X-Forwarded-For;
         real_ip_recursive on;
 
+        {% if DBMI_SSL is defined and DBMI_SSL %}
         # If load balanced, check the original protocol and redirect accordingly
         if ($http_x_forwarded_proto = 'http') {
              return 301 https://$host$request_uri;
         }
+        {% endif %}
 
     {% endif %}
 

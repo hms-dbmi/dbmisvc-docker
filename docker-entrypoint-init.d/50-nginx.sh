@@ -40,6 +40,16 @@ if [[ -n "$DBMI_CREATE_SSL" ]]; then
     openssl req -new -key "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.csr" -passin pass:${passphrase} -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
     openssl x509 -req -days 365 -in "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.csr" -signkey "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.crt"
 
+fi
+
+if [[ -n "$DBMI_SSL" ]]; then
+
+    # Set defaults
+    export DBMI_SSL_PATH=${DBMI_SSL_PATH:=/etc/nginx/ssl}
+
+    # Ensure the directory exists
+    mkdir -p ${DBMI_SSL_PATH}
+
     # Also create a wildcard certificate for errant requests
     passphrase="$(openssl rand -base64 15)"
     commonname="*"

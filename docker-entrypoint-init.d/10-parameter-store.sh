@@ -2,6 +2,7 @@
 
 # Set the default region
 export AWS_DEFAULT_REGION=${DBMI_AWS_REGION:=us-east-1}
+export AWS_SSM_ENDPOINT_URL=${DBMI_AWS_SSM_ENDPOINT_URL:=https://ssm.$AWS_DEFAULT_REGION.amazonaws.com}
 
 get_prefix_params() {
   local response
@@ -10,7 +11,7 @@ get_prefix_params() {
   local next_token
 
   response=$(
-    aws ssm describe-parameters  \
+    aws --endpoint-url $AWS_SSM_ENDPOINT_URL ssm describe-parameters  \
       --parameter-filters Key=Name,Option=BeginsWith,Values=${DBMI_PARAMETER_STORE_PREFIX} \
       --max-items 10 \
       "$@"
@@ -18,7 +19,7 @@ get_prefix_params() {
   params=$(echo "$response" | jq -r '.Parameters[]')
 
   secrets=$(
-    aws ssm get-parameters \
+    aws --endpoint-url $AWS_SSM_ENDPOINT_URL ssm get-parameters \
       --with-decryption \
       --names \
         $(echo "$response" | jq -r '.Parameters[].Name') \
@@ -40,7 +41,7 @@ get_path_params() {
   local next_token
 
   response=$(
-    aws ssm get-parameters-by-path \
+    aws --endpoint-url $AWS_SSM_ENDPOINT_URL ssm get-parameters-by-path \
       --with-decryption \
       --recursive \
       --path ${DBMI_PARAMETER_STORE_PATH} \
