@@ -1,0 +1,58 @@
+_SOURCES_:
+  - DockerMake.base.yml
+
+alpine:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-alpine{{ ALPINE_VERSION|default('3.11') }}"
+  requires:
+    - base_meta
+    - base_alpine_nginx_install
+    - base_alpine_build
+    - base_base_build
+
+alpine-zip:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-alpine{{ ALPINE_VERSION|default('3.11') }}"
+  requires:
+    - base_meta
+    - base_alpine_nginx_modules_install
+    - base_alpine_build
+    - base_base_build
+
+debian:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('buster') }}"
+  requires:
+    - base_meta
+    - base_debian_nginx_install
+    - base_debian_build
+    - base_base_build
+
+debian-zip:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('buster') }}"
+  requires:
+    - base_meta
+    - base_debian_nginx_modules_install
+    - base_debian_build
+    - base_base_build
+
+slim:
+  FROM: "python:{{ PYTHON_VERSION|default('3.7') }}-slim-{{ DEBIAN_VERSION|default('buster') }}"
+  requires:
+    - base_meta
+    - base_debian_nginx_install
+    - base_debian_build
+    - base_base_build
+
+slim-zip:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('buster') }}"
+  requires:
+    - base_meta
+    - base_debian_nginx_modules_install
+    - base_debian_build
+    - base_base_build
+
+_ALL_:
+ - alpine
+ - alpine-zip
+ - slim
+ - slim-zip
+ - debian
+ - debian-zip

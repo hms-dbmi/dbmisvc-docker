@@ -1,3 +1,9 @@
+location @handle_redirect {
+    resolver 127.0.0.1 ipv6=off;
+    set $saved_redirect_location '$upstream_http_location';
+    proxy_pass $saved_redirect_location;
+}
+
 location ~ ^{{ DBMI_FILE_PROXY_PATH|default('/proxy') }}/(.*?)/(.*?)/(.*) {
     # Only allow internal redirects
     internal;
@@ -36,4 +42,5 @@ location ~ ^{{ DBMI_FILE_PROXY_PATH|default('/proxy') }}/(.*?)/(.*?)/(.*) {
 
     # Proxy the remote file through to the client
     proxy_pass $download_url$is_args$args;
+    error_page 301 302 307 = @handle_redirect;
 }

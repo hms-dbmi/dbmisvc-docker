@@ -1,0 +1,3 @@
+docker
+gitpython
+-e git+https://github.com/b32147/DockerMake.git#egg=DockerMake

@@ -1,8 +1,8 @@
 #!/bin/bash -e
 
 # The wsgi to be run must be defined by user
-:   ${DBMI_APP_WSGI?: must absolutely be defined, ya dingus!}
-:   ${DBMI_APP_DOMAIN?: must absolutely be defined, ya dingus!}
+:   ${DBMI_APP_WSGI?: is required}
+:   ${DBMI_APP_DOMAIN?: is required}
 
 # Check static file envs
 if [ ! -z $DBMI_STATIC_FILES ]; then
