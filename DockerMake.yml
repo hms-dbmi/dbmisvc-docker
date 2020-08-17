@@ -18,7 +18,7 @@ alpine-zip:
     - base_base_build
 
 debian:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('buster') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('stretch') }}"
   requires:
     - base_meta
     - base_debian_nginx_install
@@ -26,7 +26,7 @@ debian:
     - base_base_build
 
 debian-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('buster') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('stretch') }}"
   requires:
     - base_meta
     - base_debian_nginx_modules_install
@@ -34,7 +34,7 @@ debian-zip:
     - base_base_build
 
 slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.7') }}-slim-{{ DEBIAN_VERSION|default('buster') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}"
   requires:
     - base_meta
     - base_debian_nginx_install
@@ -42,7 +42,39 @@ slim:
     - base_base_build
 
 slim-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('buster') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}"
+  requires:
+    - base_meta
+    - base_debian_nginx_modules_install
+    - base_debian_build
+    - base_base_build
+
+slim-stretch:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-slim-stretch"
+  requires:
+    - base_meta
+    - base_debian_nginx_install
+    - base_debian_build
+    - base_base_build
+
+slim-stretch-zip:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-slim-stretch"
+  requires:
+    - base_meta
+    - base_debian_nginx_modules_install
+    - base_debian_build
+    - base_base_build
+
+stretch:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-stretch"
+  requires:
+    - base_meta
+    - base_debian_nginx_install
+    - base_debian_build
+    - base_base_build
+
+stretch-zip:
+  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-stretch"
   requires:
     - base_meta
     - base_debian_nginx_modules_install
@@ -56,3 +88,7 @@ _ALL_:
  - slim-zip
  - debian
  - debian-zip
+ - slim-stretch
+ - slim-stretch-zip
+ - stretch
+ - stretch-zip

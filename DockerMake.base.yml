@@ -21,7 +21,7 @@ base_meta:
     ENV PIP_GUNICORN_VERSION=20.0.4
 
 base_debian_nginx_build:
-  FROM: python:{{ PYTHON_VERSION|default('3.7') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}
+  FROM: python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}
   build: |
 
     ARG NGINX_VERSION=1.14.2-1~stretch
@@ -273,7 +273,7 @@ base_alpine_nginx_install:
 base_alpine_pip_build:
   requires:
   - base_meta
-  FROM: python:{{ PYTHON_VERSION|default('3.7') }}-alpine{{ ALPINE_VERSION|default('3.8') }}
+  FROM: python:{{ PYTHON_VERSION|default('3.8') }}-alpine{{ ALPINE_VERSION|default('3.11') }}
   build: |
 
     # Install dependencies
@@ -291,7 +291,7 @@ base_alpine_pip_build:
 base_debian_pip_build:
   requires:
   - base_meta
-  FROM: python:{{ PYTHON_VERSION|default('3.7') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}
+  FROM: python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}
   build: |
 
     # Install dependencies
