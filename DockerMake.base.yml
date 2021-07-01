@@ -15,17 +15,18 @@ base_meta:
     ARG APP_ROOT=/app
 
     # Set package versions
-    ENV PIP_AWS_CLI_VERSION=1.18.112
+    ENV PIP_AWS_CLI_VERSION=1.19.11
     ENV PIP_SHINTO_CLI_VERSION=0.5.0
-    ENV PIP_DUMB_INIT_VERSION=1.2.2
+    ENV PIP_DUMB_INIT_VERSION=1.2.5
     ENV PIP_GUNICORN_VERSION=20.0.4
 
 base_debian_nginx_build:
-  FROM: python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}
+  FROM: python:{{ PYTHON_VERSION }}-slim-{{ DEBIAN_VERSION }}
   build: |
 
-    ARG NGINX_VERSION=1.14.2-1~stretch
-    ARG NJS_VERSION=1.14.2.0.2.6-1~stretch
+    ARG NGINX_VERSION
+    ARG NJS_VERSION
+    ARG DEBIAN_VERSION
     ARG BUILD_DIR=/tmp/dbmisvc_nginx_build
 
     # Run the build
@@ -51,8 +52,8 @@ base_debian_nginx_build:
         && tar -zxC /usr/src -f mod_zip-master.tar.gz \
         && rm mod_zip-master.tar.gz \
     # Add nginx sources
-    	&& echo "deb https://nginx.org/packages/debian/ stretch nginx" >> /etc/apt/sources.list.d/nginx.list \
-        && echo "deb-src https://nginx.org/packages/debian/ stretch nginx" >> /etc/apt/sources.list.d/nginx.list \
+    	&& echo "deb https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
+        && echo "deb-src https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
         \
     # new directory for storing sources and .deb files
         && mkdir -p "${BUILD_DIR}" \
@@ -99,11 +100,8 @@ base_debian_nginx_modules_install:
     - base_debian_nginx_modules_copy
   build: |
 
-    RUN echo $(ls -la /etc/apt/sources.list.d/temp.list)
-    RUN echo $(ls -la /tmp/dbmisvc_nginx_build)
-
-    ARG NGINX_VERSION=1.14.2-1~stretch
-    ARG NJS_VERSION=1.14.2.0.2.6-1~stretch
+    ARG NGINX_VERSION
+    ARG NJS_VERSION
     ARG BUILD_DIR=/tmp/dbmisvc_nginx_build
 
     # Install built debs and other packages
@@ -131,7 +129,7 @@ base_debian_nginx_install:
 base_alpine_nginx_modules_install:
   build: |
     # Install nginx with mod_zip
-    ENV NGINX_VERSION 1.14.2
+    ARG NGINX_VERSION
     RUN GPG_KEYS=B0F4253373F8F6F510D42178520A9993A1C052F8 \
     	&& CONFIG="\
     		--prefix=/etc/nginx \
@@ -273,7 +271,7 @@ base_alpine_nginx_install:
 base_alpine_pip_build:
   requires:
   - base_meta
-  FROM: python:{{ PYTHON_VERSION|default('3.8') }}-alpine{{ ALPINE_VERSION|default('3.11') }}
+  FROM: python:{{ PYTHON_VERSION }}-alpine{{ ALPINE_VERSION }}
   build: |
 
     # Install dependencies
@@ -291,7 +289,7 @@ base_alpine_pip_build:
 base_debian_pip_build:
   requires:
   - base_meta
-  FROM: python:{{ PYTHON_VERSION|default('3.8') }}-slim-{{ DEBIAN_VERSION|default('stretch') }}
+  FROM: python:{{ PYTHON_VERSION }}-slim-{{ DEBIAN_VERSION }}
   build: |
 
     # Install dependencies
@@ -338,6 +336,8 @@ base_debian_build:
 base_base_build:
   build_directory: ./
   build: |
+
+    # Makea a virtualenv
 
     # Install some pip packages
     RUN pip install \
