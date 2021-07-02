@@ -1,0 +1,141 @@
+debian_nginx_build:
+  FROM: python:{{ PYTHON_VERSION }}-slim-{{ DEBIAN_VERSION }}
+  build: |
+
+    ARG NGINX_VERSION
+    ARG NJS_VERSION
+    ARG DEBIAN_VERSION
+    ARG BUILD_DIR=/tmp/dbmisvc_nginx_build
+
+    # Run the build
+    RUN set -x \
+    	&& apt-get update \
+    	&& apt-get install --no-install-recommends --no-install-suggests -y curl gnupg1 apt-transport-https ca-certificates \
+    	&& \
+    	NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
+    	found=''; \
+    	for server in \
+    		ha.pool.sks-keyservers.net \
+    		hkp://keyserver.ubuntu.com:80 \
+    		hkp://p80.pool.sks-keyservers.net:80 \
+    		pgp.mit.edu \
+    	; do \
+    		echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
+    		apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
+    	done; \
+    	test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
+    	apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
+    # Prepare additional modules
+        && curl -fSL https://github.com/evanmiller/mod_zip/archive/master.tar.gz -o mod_zip-master.tar.gz \
+        && tar -zxC /usr/src -f mod_zip-master.tar.gz \
+        && rm mod_zip-master.tar.gz \
+    # Add nginx sources
+    	&& echo "deb https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
+        && echo "deb-src https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
+        \
+    # new directory for storing sources and .deb files
+        && mkdir -p "${BUILD_DIR}" \
+        && chmod 777 "${BUILD_DIR}" \
+    # (777 to ensure APT's "_apt" user can access it too)
+        \
+    # build .deb files from upstream's source packages (which are verified by apt-get)
+        && apt-get update \
+        && apt-get build-dep -y nginx=${NGINX_VERSION} \
+    						 nginx-module-xslt=${NGINX_VERSION} \
+                             nginx-module-geoip=${NGINX_VERSION} \
+                             nginx-module-image-filter=${NGINX_VERSION} \
+                             nginx-module-njs=${NJS_VERSION} \
+        && ( \
+            cd "${BUILD_DIR}" \
+            && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
+              apt-get source nginx=${NGINX_VERSION} \
+    # Include any additional modules into nginx rules
+            && nginxBuildDir=$(find . -maxdepth 1 -type d -regextype sed -regex "\./nginx\-[0-9]\{1,3\}\.[0-9]\{1,3\}\.[0-9]\{1,3\}" | head -n 1) \
+            && sed -iE 's/\.\/configure/.\/configure --add-module=\/usr\/src\/mod_zip-master/g' $nginxBuildDir/debian/rules \
+    # Build nginx
+            && cd $nginxBuildDir && dpkg-buildpackage -b \
+    # Build other modules
+            && cd "${BUILD_DIR}" \
+            && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
+                apt-get source --compile nginx-module-xslt=${NGINX_VERSION} \
+                                         nginx-module-geoip=${NGINX_VERSION} \
+                                         nginx-module-image-filter=${NGINX_VERSION} \
+                                         nginx-module-njs=${NJS_VERSION} \
+            ) \
+        && ls -lAFh "${BUILD_DIR}" \
+        && ( cd "${BUILD_DIR}" && dpkg-scanpackages . > Packages ) \
+        && grep '^Package: ' "${BUILD_DIR}/Packages" \
+        && echo "deb [ trusted=yes ] file://${BUILD_DIR} ./" > /etc/apt/sources.list.d/temp.list
+
+debian_nginx_modules_copy:
+  copy_from:
+    debian_nginx_build:
+      /tmp/dbmisvc_nginx_build: /tmp/
+      /etc/apt/sources.list.d/temp.list: /etc/apt/sources.list.d/
+
+debian_nginx_modules_install:
+  requires:
+    - debian_nginx_modules_copy
+  build: |
+
+    ARG NGINX_VERSION
+    ARG NJS_VERSION
+    ARG BUILD_DIR=/tmp/dbmisvc_nginx_build
+
+    # Install built debs and other packages
+    RUN apt-get -o Acquire::GzipIndexes=false update \
+        && apt-get install --no-install-recommends --no-install-suggests -y \
+                            nginx=${NGINX_VERSION} \
+    						nginx-module-xslt=${NGINX_VERSION} \
+                            nginx-module-geoip=${NGINX_VERSION} \
+                            nginx-module-image-filter=${NGINX_VERSION} \
+                            nginx-module-njs=${NJS_VERSION} \
+    						gettext-base \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/* \
+    	&& rm -rf ${BUILD_DIR} \
+    	&& rm /etc/apt/sources.list.d/temp.list
+
+debian_nginx_install:
+  build: |
+    RUN apt-get update \
+      && apt-get install -y --no-install-recommends \
+        nginx \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*
+
+debian_pip_build:
+  requires:
+  - base_meta
+  FROM: python:{{ PYTHON_VERSION }}-slim-{{ DEBIAN_VERSION }}
+  build: |
+
+    # Install dependencies
+    RUN apt-get update \
+      && apt-get install -y --no-install-recommends \
+        g++ \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*
+
+    # Install some pip packages
+    RUN pip install \
+      awscli==${PIP_AWS_CLI_VERSION} \
+      shinto-cli==${PIP_SHINTO_CLI_VERSION} \
+      dumb-init==${PIP_DUMB_INIT_VERSION} \
+      gunicorn==${PIP_GUNICORN_VERSION}
+
+debian_build:
+  copy_from:
+    debian_pip_build:
+      /root/.cache: /root/
+  build: |
+    RUN apt-get update \
+        && apt-get install -y --no-install-recommends \
+            jq \
+            curl \
+            openssl \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+    # Set nginx user
+    ENV DBMI_NGINX_USER www-data

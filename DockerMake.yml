@@ -1,5 +1,13 @@
+# Title: dbmisvc-docker
+# Description: Builder for base image to be used for DBMI services
+# Author: HMS DBMI Tech Core
+# Version: 0.1.1
+# Date: 2021-07-02
+
 _SOURCES_:
   - DockerMake.base.yml
+  - DockerMake.alpine.yml
+  - DockerMake.debian.yml
 
 alpine:
   FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-alpine{{ ALPINE_VERSION|default('3.14') }}"
@@ -8,8 +16,8 @@ alpine:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_alpine_nginx_install
-    - base_alpine_build
+    - alpine_nginx_install
+    - alpine_build
     - base_base_build
 
 alpine3.14:
@@ -19,8 +27,8 @@ alpine3.14:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_alpine_nginx_install
-    - base_alpine_build
+    - alpine_nginx_install
+    - alpine_build
     - base_base_build
 
 alpine3.13:
@@ -30,8 +38,8 @@ alpine3.13:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_alpine_nginx_install
-    - base_alpine_build
+    - alpine_nginx_install
+    - alpine_build
     - base_base_build
 
 alpine3.12:
@@ -41,8 +49,8 @@ alpine3.12:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_alpine_nginx_install
-    - base_alpine_build
+    - alpine_nginx_install
+    - alpine_build
     - base_base_build
 
 alpine3.11:
@@ -52,8 +60,8 @@ alpine3.11:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_alpine_nginx_install
-    - base_alpine_build
+    - alpine_nginx_install
+    - alpine_build
     - base_base_build
 
 alpine-zip:
@@ -64,8 +72,8 @@ alpine-zip:
     NGINX_VERSION: "1.21.0"
   requires:
     - base_meta
-    - base_alpine_nginx_modules_install
-    - base_alpine_build
+    - alpine_nginx_modules_install
+    - alpine_build
     - base_base_build
 
 alpine3.14-zip:
@@ -76,8 +84,8 @@ alpine3.14-zip:
     NGINX_VERSION: "1.21.0"
   requires:
     - base_meta
-    - base_alpine_nginx_modules_install
-    - base_alpine_build
+    - alpine_nginx_modules_install
+    - alpine_build
     - base_base_build
 
 alpine3.13-zip:
@@ -88,8 +96,8 @@ alpine3.13-zip:
     NGINX_VERSION: "1.21.0"
   requires:
     - base_meta
-    - base_alpine_nginx_modules_install
-    - base_alpine_build
+    - alpine_nginx_modules_install
+    - alpine_build
     - base_base_build
 
 alpine3.12-zip:
@@ -100,8 +108,8 @@ alpine3.12-zip:
     NGINX_VERSION: "1.21.0"
   requires:
     - base_meta
-    - base_alpine_nginx_modules_install
-    - base_alpine_build
+    - alpine_nginx_modules_install
+    - alpine_build
     - base_base_build
 
 alpine3.11-zip:
@@ -112,8 +120,8 @@ alpine3.11-zip:
     NGINX_VERSION: "1.21.0"
   requires:
     - base_meta
-    - base_alpine_nginx_modules_install
-    - base_alpine_build
+    - alpine_nginx_modules_install
+    - alpine_build
     - base_base_build
 
 debian:
@@ -123,8 +131,8 @@ debian:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 buster:
@@ -134,8 +142,8 @@ buster:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 stretch:
@@ -145,8 +153,8 @@ stretch:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 debian-zip:
@@ -158,8 +166,8 @@ debian-zip:
     NJS_VERSION: "1.20.1+0.6.1-1~buster"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 buster-zip:
@@ -171,8 +179,8 @@ buster-zip:
     NJS_VERSION: "1.20.1+0.6.1-1~buster"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 stretch-zip:
@@ -184,8 +192,8 @@ stretch-zip:
     NJS_VERSION: "1.18.0.0.4.4-2~stretch"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 slim:
@@ -195,8 +203,8 @@ slim:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 slim-buster:
@@ -206,8 +214,8 @@ slim-buster:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 slim-stretch:
@@ -217,8 +225,8 @@ slim-stretch:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 slim-zip:
@@ -230,8 +238,8 @@ slim-zip:
     NJS_VERSION: "1.20.1+0.6.1-1~buster"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 slim-buster-zip:
@@ -243,8 +251,8 @@ slim-buster-zip:
     NJS_VERSION: "1.20.1+0.6.1-1~buster"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 slim-stretch-zip:
@@ -256,8 +264,8 @@ slim-stretch-zip:
     NJS_VERSION: "1.18.0.0.4.4-2~stretch"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 ubuntu:
@@ -267,8 +275,8 @@ ubuntu:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 ubuntu20.04:
@@ -278,8 +286,8 @@ ubuntu20.04:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 ubuntu18.04:
@@ -289,8 +297,8 @@ ubuntu18.04:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 ubuntu16.04:
@@ -300,8 +308,8 @@ ubuntu16.04:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_install
-    - base_debian_build
+    - debian_nginx_install
+    - debian_build
     - base_base_build
 
 ubuntu-zip:
@@ -311,8 +319,8 @@ ubuntu-zip:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 ubuntu20.04-zip:
@@ -322,8 +330,8 @@ ubuntu20.04-zip:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 ubuntu18.04-zip:
@@ -333,8 +341,8 @@ ubuntu18.04-zip:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 ubuntu16.04-zip:
@@ -344,8 +352,8 @@ ubuntu16.04-zip:
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - base_debian_nginx_modules_install
-    - base_debian_build
+    - debian_nginx_modules_install
+    - debian_build
     - base_base_build
 
 _ALL_:
