@@ -89,15 +89,18 @@ def main(arguments):
     # Build versioned targets
     targets = []
     for t in args.targets:
-        if args.alpines:
+        if t.startswith('alpine') and args.alpines:
             for v in args.alpines:
-                targets.append(t.replace('alpine', 'alpine{}'.format(v)))
-        if args.debians:
+                targets.append(t.replace('alpine', f'alpine{v}'))
+        if t.startswith('debian') and args.debians:
             for v in args.debians:
                 targets.append(t.replace('debian', v))
-        if args.ubuntus:
+        if t.startswith('slim') and args.debians:
+            for v in args.debians:
+                targets.append(t.replace('slim', f'slim-{v}'))
+        if t.startswith('ubuntu') and args.ubuntus:
             for v in args.ubuntus:
-                targets.append(t.replace('ubuntu', 'ubuntu{}'.format(v)))
+                targets.append(t.replace('ubuntu', f'ubuntu{v}'))
 
     # Iterate targets
     for target in targets:
