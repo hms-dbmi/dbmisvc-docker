@@ -1,0 +1,245 @@
+ubuntu_python_version:
+  FROM: debian:bullseye-slim
+  build: |
+
+    # We need python version
+    ARG PYTHON_VERSION
+
+    # Install needed packages
+    RUN apt-get update && apt-get install -y skopeo jq wget
+
+    # Use Docker image tags to get the latest full version of Python matching the passed minor version (e.g. 3.9 -> 3.9.6)
+    RUN skopeo list-tags docker://docker.io/python | jq --arg pyreg "^${PYTHON_VERSION}.[0-9]+\$" \
+        -r '[.Tags[] | select( test( $pyreg ) ) ] | sort_by( split( "." ) | map( tonumber ) ) | .[-1]' > /tmp/pyver
+
+# Docker-make copies assets after included build commands so it's better to have copies as their own steps
+ubuntu_python_version_copy:
+  copy_from:
+    ubuntu_python_version:
+      /tmp/pyver: /tmp/
+
+ubuntu_python_install:
+  requires:
+    - ubuntu_python_version_copy
+  build: |
+
+    # Set python version
+    ARG PYTHON_VERSION
+
+    # ensure local python is preferred over distribution python
+    ENV PATH /usr/local/bin:$PATH
+
+    # http://bugs.python.org/issue19846
+    # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
+    ENV LANG C.UTF-8
+
+    RUN set -eux; \
+      apt-get update; \
+      apt-get install -y --no-install-recommends \
+        ca-certificates \
+        netbase \
+        tzdata \
+      ; \
+      rm -rf /var/lib/apt/lists/*
+
+    # Install needed dependencies for compiling Python
+    RUN set -ex \
+      \
+      && VERSION=`cat /tmp/pyver` \
+      && DEBIAN_FRONTEND=noninteractive \
+      && savedAptMark="$(apt-mark showmanual)" \
+      && apt-get update && apt-get install -y --no-install-recommends \
+        dpkg-dev \
+        gcc \
+        libbluetooth-dev \
+        libbz2-dev \
+        libc6-dev \
+        libexpat1-dev \
+        libffi-dev \
+        libgdbm-dev \
+        liblzma-dev \
+        libncursesw5-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        make \
+        tk-dev \
+        uuid-dev \
+        wget \
+        xz-utils \
+        zlib1g-dev \
+    # as of Stretch, "gpg" is no longer included by default
+        $(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
+      \
+      && wget --quiet -O python.tar.xz "https://www.python.org/ftp/python/${VERSION}/Python-$VERSION.tar.xz" \
+      && wget --quiet -O python.tar.xz.asc "https://www.python.org/ftp/python/${VERSION}/Python-$VERSION.tar.xz.asc" \
+      # && export GNUPGHOME="$(mktemp -d)" \
+      # && gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$GPG_KEY" \
+      # && gpg --batch --verify python.tar.xz.asc python.tar.xz \
+      # && { command -v gpgconf > /dev/null && gpgconf --kill all || :; } \
+      # && rm -rf "$GNUPGHOME" python.tar.xz.asc \
+      && mkdir -p /usr/src/python \
+      && tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
+      && rm python.tar.xz \
+      \
+      && cd /usr/src/python \
+      && gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
+      && ./configure \
+        --build="$gnuArch" \
+        --enable-loadable-sqlite-extensions \
+        --enable-optimizations \
+        --enable-option-checking=fatal \
+        --enable-shared \
+        --with-system-expat \
+        --with-system-ffi \
+        --without-ensurepip \
+      && make -j "$(nproc)" \
+        LDFLAGS="-Wl,--strip-all" \
+    # setting PROFILE_TASK makes "--enable-optimizations" reasonable: https://bugs.python.org/issue36044 / https://github.com/docker-library/python/issues/160#issuecomment-509426916
+        PROFILE_TASK='-m test.regrtest --pgo \
+          test_array \
+          test_base64 \
+          test_binascii \
+          test_binhex \
+          test_binop \
+          test_bytes \
+          test_c_locale_coercion \
+          test_class \
+          test_cmath \
+          test_codecs \
+          test_compile \
+          test_complex \
+          test_csv \
+          test_decimal \
+          test_dict \
+          test_float \
+          test_fstring \
+          test_hashlib \
+          test_io \
+          test_iter \
+          test_json \
+          test_long \
+          test_math \
+          test_memoryview \
+          test_pickle \
+          test_re \
+          test_set \
+          test_slice \
+          test_struct \
+          test_threading \
+          test_time \
+          test_traceback \
+          test_unicode \
+        ' \
+      && make install \
+      && rm -rf /usr/src/python \
+      \
+      && find /usr/local -depth \
+        \( \
+          \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+          -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
+          -o \( -type f -a -name 'wininst-*.exe' \) \
+        \) -exec rm -rf '{}' + \
+      \
+      && ldconfig \
+      \
+      && apt-mark auto '.*' > /dev/null \
+      && apt-mark manual $savedAptMark \
+      && find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec ldd '{}' ';' | \
+        awk '/=>/ { print $(NF-1) }' | \
+        sort -u | \
+        xargs -r dpkg-query --search | \
+        cut -d: -f1 | \
+        sort -u | \
+        xargs -r apt-mark manual \
+      && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+      && rm -rf /var/lib/apt/lists/* \
+      \
+      && python3 --version
+
+    # Create symlinks
+    RUN cd /usr/local/bin \
+      && MAJOR=`cat /tmp/pyver | cut -d. -f1` \
+      && ln -sf easy_install-${MAJOR} easy_install \
+      && ln -sf idle${MAJOR} idle \
+      && ln -sf pydoc${MAJOR} pydoc \
+      && ln -sf python${MAJOR} python \
+      && ln -sf python-config${MAJOR} python-config
+
+    RUN set -ex; \
+      \
+      savedAptMark="$(apt-mark showmanual)"; \
+      apt-get update; \
+      apt-get install -y --no-install-recommends wget; \
+      \
+      wget --quiet -O get-pip.py "https://bootstrap.pypa.io/get-pip.py"; \
+      \
+      apt-mark auto '.*' > /dev/null; \
+      [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+      apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+      rm -rf /var/lib/apt/lists/*; \
+      \
+      python get-pip.py \
+        --disable-pip-version-check \
+        --no-cache-dir \
+      ; \
+      pip --version; \
+      \
+      find /usr/local -depth \
+        \( \
+          \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+          -o \
+          \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+        \) -exec rm -rf '{}' +; \
+      rm -f get-pip.py
+
+    # Create symlinks
+    RUN cd /usr/local/bin \
+      && MAJOR=`cat /tmp/pyver | cut -d. -f1` \
+      && ln -sf pip${MAJOR} pip \
+      && pip${MAJOR} --no-cache-dir install --upgrade pip
+
+ubuntu_nginx_install:
+  build: |
+    RUN apt-get update \
+      && apt-get install -y --no-install-recommends \
+        nginx \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*
+
+ubuntu_pip_build:
+  requires:
+    - base_meta
+    - ubuntu_python_install
+  FROM: ubuntu:{{ UBUNTU_VERSION }}
+  build: |
+
+    # Install dependencies
+    RUN apt-get update \
+      && apt-get install -y --no-install-recommends \
+        g++ \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*
+
+    # Install some pip packages
+    RUN pip install \
+      awscli==${PIP_AWS_CLI_VERSION} \
+      shinto-cli==${PIP_SHINTO_CLI_VERSION} \
+      dumb-init==${PIP_DUMB_INIT_VERSION} \
+      gunicorn==${PIP_GUNICORN_VERSION}
+
+ubuntu_build:
+  copy_from:
+    ubuntu_pip_build:
+      /root/.cache: /root/
+  build: |
+    RUN apt-get update \
+        && apt-get install -y --no-install-recommends \
+            jq \
+            curl \
+            openssl \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+    # Set nginx user
+    ENV DBMI_NGINX_USER www-data

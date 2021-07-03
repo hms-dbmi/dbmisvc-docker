@@ -8,6 +8,7 @@ _SOURCES_:
   - DockerMake.base.yml
   - DockerMake.alpine.yml
   - DockerMake.debian.yml
+  - DockerMake.ubuntu.yml
 
 alpine:
   FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-alpine{{ ALPINE_VERSION|default('3.14') }}"
@@ -269,91 +270,51 @@ slim-stretch-zip:
     - base_base_build
 
 ubuntu:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('20.04') }}"
+  FROM: "ubuntu:{{ UBUNTU_VERSION|default('20.04') }}"
   build_args:
-    DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('20.04') }}"
+    UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('20.04') }}"
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - debian_nginx_install
-    - debian_build
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - ubuntu_build
     - base_base_build
 
 ubuntu20.04:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-ubuntu20.04"
+  FROM: "ubuntu:20.04"
   build_args:
-    DEBIAN_VERSION: 20.04
+    UBUNTU_VERSION: 20.04
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - debian_nginx_install
-    - debian_build
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - ubuntu_build
     - base_base_build
 
 ubuntu18.04:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-ubuntu18.04"
+  FROM: "ubuntu:18.04"
   build_args:
-    DEBIAN_VERSION: 18.04
+    UBUNTU_VERSION: 18.04
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - debian_nginx_install
-    - debian_build
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - ubuntu_build
     - base_base_build
 
 ubuntu16.04:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-ubuntu16.04"
+  FROM: "ubuntu:16.04"
   build_args:
-    DEBIAN_VERSION: 16.04
+    UBUNTU_VERSION: 16.04
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
   requires:
     - base_meta
-    - debian_nginx_install
-    - debian_build
-    - base_base_build
-
-ubuntu-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-{{ DEBIAN_VERSION|default('20.04') }}"
-  build_args:
-    DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('20.04') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-ubuntu20.04-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-ubuntu20.04"
-  build_args:
-    DEBIAN_VERSION: 20.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-ubuntu18.04-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-ubuntu18.04"
-  build_args:
-    DEBIAN_VERSION: 18.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-ubuntu16.04-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.8') }}-ubuntu16.04"
-  build_args:
-    DEBIAN_VERSION: 16.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.8') }}"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - ubuntu_build
     - base_base_build
 
 _ALL_:
@@ -362,15 +323,11 @@ _ALL_:
  - alpine3.13
  - alpine3.12
  - alpine3.11
- - alpine3.10
- - alpine3.9
  - alpine-zip
  - alpine3.14-zip
  - alpine3.13-zip
  - alpine3.12-zip
  - alpine3.11-zip
- - alpine3.10-zip
- - alpine3.9-zip
  - slim
  - slim-buster
  - slim-stretch
@@ -387,7 +344,3 @@ _ALL_:
  - ubuntu20.04
  - ubuntu18.04
  - ubuntu16.04
- - ubuntu-zip
- - ubuntu20.04-zip
- - ubuntu18.04-zip
- - ubuntu16.04-zip
