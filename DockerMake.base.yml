@@ -15,10 +15,10 @@ base_meta:
     ARG APP_ROOT=/app
 
     # Set package versions
-    ENV PIP_AWS_CLI_VERSION=1.19.11
+    ENV PIP_AWS_CLI_VERSION=1.21.10
     ENV PIP_SHINTO_CLI_VERSION=0.5.0
     ENV PIP_DUMB_INIT_VERSION=1.2.5
-    ENV PIP_GUNICORN_VERSION=20.0.4
+    ENV PIP_GUNICORN_VERSION=20.1.0
 
 base_base_build:
   build_directory: ./
