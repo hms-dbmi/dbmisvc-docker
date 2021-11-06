@@ -3,17 +3,16 @@
 # Check for AWS EC2 internal endpoint
 if [[ -n $DBMI_LB ]]; then
 
-    # Get the AWS IMDSv2 session token
-    TOKEN=`curl -X PUT "http://169.254.169.254/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 21600"`
+    # Set API IP
+    AWS_IMDS_ENDPOINT="http://169.254.169.254"
 
     # Get the EC2 host IP
-    export DBMI_EC2_HOST=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -sL http://169.254.169.254/latest/meta-data/local-ipv4)
+    export DBMI_EC2_HOST=$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/local-ipv4)
     export ALLOWED_HOSTS=$ALLOWED_HOSTS,$DBMI_EC2_HOST
 
     # Set the trusted addresses for load balancers to the current subnet
-    DBMI_EC2_MAC=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -sL http://169.254.169.254/latest/meta-data/mac)
-    export DBMI_LB_SUBNET=$(curl -H "X-aws-ec2-metadata-token: $TOKEN" -sL http://169.254.169.254/latest/meta-data/network/interfaces/macs/$DBMI_EC2_MAC/vpc-ipv4-cidr-blocks)
-
+    DBMI_EC2_MAC=$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/mac)
+    export DBMI_LB_SUBNET=$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/$DBMI_EC2_MAC/vpc-ipv4-cidr-blocks)
 fi
 
 # Check for self signed
@@ -68,7 +67,11 @@ if [[ -n "$DBMI_SSL" ]]; then
 
 fi
 
+# Set base directory for nginx configuration files
+DBMI_CONFIG_PATH=${DBMI_CONFIG_PATH:=/etc/nginx/conf.d}
+mkdir -p $DBMI_CONFIG_PATH
+
 # Setup the nginx and site configuration
-j2 /docker-entrypoint-templates.d/nginx.healthcheck.conf.j2 > /etc/nginx/conf.d/nginx.healthcheck.conf
-j2 /docker-entrypoint-templates.d/nginx.proxy.conf.j2 > /etc/nginx/conf.d/nginx.proxy.conf
+j2 /docker-entrypoint-templates.d/nginx.healthcheck.conf.j2 > $DBMI_CONFIG_PATH/nginx.healthcheck.conf
+j2 /docker-entrypoint-templates.d/nginx.proxy.conf.j2 > $DBMI_CONFIG_PATH/nginx.proxy.conf
 j2 /docker-entrypoint-templates.d/nginx.conf.j2 > /etc/nginx/nginx.conf
