@@ -46,6 +46,18 @@ ubuntu_python_install:
     RUN set -ex \
       \
       && VERSION=`cat /tmp/pyver` \
+      && declare -A PGP_KEYS=( \
+      ['3.11']='a035c8c19219ba821ecea86b64e628f8d684696d' \
+      ['3.10']='a035c8c19219ba821ecea86b64e628f8d684696d' \
+      ['3.9']='e3ff2839c048b25c084debe9b26995e310250568' \
+      ['3.8']='e3ff2839c048b25c084debe9b26995e310250568' \
+      ['3.7']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
+      ['3.6']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
+      ['3.5']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
+      ['3.4']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
+      ['2.7']='c01e1cad5ea2c4f0b8e3571504c367c218add4ff' \
+      ) \
+      && PGP_KEY="${PGP_KEYS[$PYTHON_VERSION]}" \
       && DEBIAN_FRONTEND=noninteractive \
       && savedAptMark="$(apt-mark showmanual)" \
       && apt-get update && apt-get install -y --no-install-recommends \
@@ -73,11 +85,11 @@ ubuntu_python_install:
       \
       && wget --quiet -O python.tar.xz "https://www.python.org/ftp/python/${VERSION}/Python-$VERSION.tar.xz" \
       && wget --quiet -O python.tar.xz.asc "https://www.python.org/ftp/python/${VERSION}/Python-$VERSION.tar.xz.asc" \
-      # && export GNUPGHOME="$(mktemp -d)" \
-      # && gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$GPG_KEY" \
-      # && gpg --batch --verify python.tar.xz.asc python.tar.xz \
-      # && { command -v gpgconf > /dev/null && gpgconf --kill all || :; } \
-      # && rm -rf "$GNUPGHOME" python.tar.xz.asc \
+      && export GNUPGHOME="$(mktemp -d)" \
+      && gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$GPG_KEY" \
+      && gpg --batch --verify python.tar.xz.asc python.tar.xz \
+      && { command -v gpgconf > /dev/null && gpgconf --kill all || :; } \
+      && rm -rf "$GNUPGHOME" python.tar.xz.asc \
       && mkdir -p /usr/src/python \
       && tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
       && rm python.tar.xz \
@@ -198,6 +210,19 @@ ubuntu_python_install:
       && MAJOR=`cat /tmp/pyver | cut -d. -f1` \
       && ln -sf pip${MAJOR} pip \
       && pip${MAJOR} --no-cache-dir install --upgrade pip
+
+    # Create virtualenv
+    RUN python -m venv /opt/base-env
+
+# Docker-make copies assets after included build commands so it's better to have copies as their own steps
+ubuntu_python_venv_copy:
+  copy_from:
+    ubuntu_python_install:
+      /opt/base-env: /opt/
+  build: |
+
+      # Use venv binaries
+      ENV PATH="/opt/base-env/bin:$PATH"
 
 ubuntu_nginx_install:
   build: |
