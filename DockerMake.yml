@@ -136,7 +136,7 @@ debian:
     - debian_build
     - base_base_build
 
-bullseye:
+debian11:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-bullseye"
   build_args:
     DEBIAN_VERSION: bullseye
@@ -147,7 +147,7 @@ bullseye:
     - debian_build
     - base_base_build
 
-buster:
+debian10:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-buster"
   build_args:
     DEBIAN_VERSION: buster
@@ -158,7 +158,7 @@ buster:
     - debian_build
     - base_base_build
 
-stretch:
+debian9:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-stretch"
   build_args:
     DEBIAN_VERSION: stretch
@@ -182,7 +182,7 @@ debian-zip:
     - debian_build
     - base_base_build
 
-bullseye-zip:
+debian11-zip:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-bullseye"
   build_args:
     DEBIAN_VERSION: bullseye
@@ -195,7 +195,7 @@ bullseye-zip:
     - debian_build
     - base_base_build
 
-buster-zip:
+debian10-zip:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-buster"
   build_args:
     DEBIAN_VERSION: buster
@@ -208,7 +208,7 @@ buster-zip:
     - debian_build
     - base_base_build
 
-stretch-zip:
+debian9-zip:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-stretch"
   build_args:
     DEBIAN_VERSION: stretch
@@ -221,7 +221,7 @@ stretch-zip:
     - debian_build
     - base_base_build
 
-slim:
+debian-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-{{ DEBIAN_VERSION|default('bullseye') }}"
   build_args:
     DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('bullseye') }}"
@@ -232,7 +232,7 @@ slim:
     - debian_build
     - base_base_build
 
-slim-bullseye:
+debian11-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-bullseye"
   build_args:
     DEBIAN_VERSION: bullseye
@@ -243,7 +243,7 @@ slim-bullseye:
     - debian_build
     - base_base_build
 
-slim-buster:
+debian10-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-buster"
   build_args:
     DEBIAN_VERSION: buster
@@ -254,7 +254,7 @@ slim-buster:
     - debian_build
     - base_base_build
 
-slim-stretch:
+debian9-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-stretch"
   build_args:
     DEBIAN_VERSION: stretch
@@ -265,7 +265,7 @@ slim-stretch:
     - debian_build
     - base_base_build
 
-slim-zip:
+debian-slim-zip:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-{{ DEBIAN_VERSION|default('bullseye') }}"
   build_args:
     DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('bullseye') }}"
@@ -281,7 +281,7 @@ slim-zip:
     - debian_build
     - base_base_build
 
-slim-bullseye-zip:
+debian11-slim-zip:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-bullseye"
   build_args:
     DEBIAN_VERSION: bullseye
@@ -297,7 +297,7 @@ slim-bullseye-zip:
     - debian_build
     - base_base_build
 
-slim-buster-zip:
+debian10-slim-zip:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-buster"
   build_args:
     DEBIAN_VERSION: buster
@@ -310,7 +310,7 @@ slim-buster-zip:
     - debian_build
     - base_base_build
 
-slim-stretch-zip:
+debian9-slim-zip:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-stretch"
   build_args:
     DEBIAN_VERSION: stretch
@@ -368,22 +368,26 @@ _ALL_:
  - alpine3.14-zip
  - alpine3.13-zip
  - alpine3.12-zip
- - slim
- - slim-bullseye
- - slim-buster
- - slim-stretch
- - slim-zip
- - slim-bullseye-zip
- - slim-buster-zip
- - slim-stretch-zip
+ - debian-slim
+ - debian11-slim
+ - debian10-slim
+ - debian9-slim
+ - debian8-slim
+ - debian-slim-zip
+ - debian11-slim-zip
+ - debian10-slim-zip
+ - debian9-slim-zip
+ - debian8-slim-zip
  - debian
- - bullseye
- - buster
- - stretch
+ - debian11
+ - debian10
+ - debian9
+ - debian8
  - debian-zip
- - bullseye-zip
- - buster-zip
- - stretch-zip
+ - debian11-zip
+ - debian10-zip
+ - debian9-zip
+ - debian8-zip
  - ubuntu
  - ubuntu20.04
  - ubuntu18.04
