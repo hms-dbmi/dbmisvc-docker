@@ -105,6 +105,7 @@ debian_nginx_install:
       && rm -rf /var/lib/apt/lists/*
 
 debian_pip_build:
+  build_directory: ./
   requires:
   - base_meta
   FROM: python:{{ PYTHON_VERSION }}-slim-{{ DEBIAN_VERSION }}
@@ -117,12 +118,9 @@ debian_pip_build:
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*
 
-    # Install some pip packages
-    RUN pip install \
-      awscli==${PIP_AWS_CLI_VERSION} \
-      shinto-cli==${PIP_SHINTO_CLI_VERSION} \
-      dumb-init==${PIP_DUMB_INIT_VERSION} \
-      gunicorn==${PIP_GUNICORN_VERSION}
+    # Add requirements
+    ADD image-requirements.txt /image-requirements.txt
+    RUN pip install -r /image-requirements.txt
 
 debian_build:
   copy_from:

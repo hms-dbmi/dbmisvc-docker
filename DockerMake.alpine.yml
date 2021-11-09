@@ -143,6 +143,7 @@ alpine_nginx_install:
 alpine_pip_build:
   requires:
   - base_meta
+  build_directory: ./
   FROM: python:{{ PYTHON_VERSION }}-alpine{{ ALPINE_VERSION }}
   build: |
 
@@ -151,12 +152,9 @@ alpine_pip_build:
         build-base \
         g++
 
-    # Install some pip packages
-    RUN pip install \
-      awscli==${PIP_AWS_CLI_VERSION} \
-      shinto-cli==${PIP_SHINTO_CLI_VERSION} \
-      dumb-init==${PIP_DUMB_INIT_VERSION} \
-      gunicorn==${PIP_GUNICORN_VERSION}
+    # Add requirements
+    ADD image-requirements.txt /image-requirements.txt
+    RUN pip install -r /image-requirements.txt
 
 alpine_build:
   copy_from:

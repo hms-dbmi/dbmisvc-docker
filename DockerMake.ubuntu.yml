@@ -236,6 +236,7 @@ ubuntu_pip_build:
   requires:
     - base_meta
     - ubuntu_python_install
+  build_directory: ./
   FROM: ubuntu:{{ UBUNTU_VERSION }}
   build: |
 
@@ -246,12 +247,9 @@ ubuntu_pip_build:
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*
 
-    # Install some pip packages
-    RUN pip install \
-      awscli==${PIP_AWS_CLI_VERSION} \
-      shinto-cli==${PIP_SHINTO_CLI_VERSION} \
-      dumb-init==${PIP_DUMB_INIT_VERSION} \
-      gunicorn==${PIP_GUNICORN_VERSION}
+    # Add requirements
+    ADD image-requirements.txt /image-requirements.txt
+    RUN pip install -r /image-requirements.txt
 
 ubuntu_build:
   copy_from:

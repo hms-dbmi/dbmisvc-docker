@@ -14,25 +14,13 @@ base_meta:
     ARG BUILD_ENV=prod
     ARG APP_ROOT=/app
 
-    # Set package versions
-    ENV PIP_AWS_CLI_VERSION=1.21.10
-    ENV PIP_SHINTO_CLI_VERSION=0.5.0
-    ENV PIP_DUMB_INIT_VERSION=1.2.5
-    ENV PIP_GUNICORN_VERSION=20.1.0
-
 base_base_build:
   build_directory: ./
   build: |
 
-    # Make a virtualenv
-    # TODO: Figure this out
-
-    # Install some pip packages
-    RUN pip install \
-      awscli==${PIP_AWS_CLI_VERSION} \
-      shinto-cli==${PIP_SHINTO_CLI_VERSION} \
-      dumb-init==${PIP_DUMB_INIT_VERSION} \
-      gunicorn==${PIP_GUNICORN_VERSION}
+    # Add requirements
+    ADD image-requirements.txt /image-requirements.txt
+    RUN pip install -r /image-requirements.txt
 
     # Copy scripts, templates and resources
     ADD docker-entrypoint-templates.d/ /docker-entrypoint-templates.d/
