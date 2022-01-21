@@ -9,28 +9,28 @@ debian_nginx_build:
 
     # Run the build
     RUN set -x \
-    	&& apt-get update \
-    	&& apt-get install --no-install-recommends --no-install-suggests -y curl gnupg1 apt-transport-https ca-certificates \
-    	&& \
-    	NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
-    	found=''; \
-    	for server in \
-    		ha.pool.sks-keyservers.net \
-    		hkp://keyserver.ubuntu.com:80 \
-    		hkp://p80.pool.sks-keyservers.net:80 \
-    		pgp.mit.edu \
-    	; do \
-    		echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
-    		apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
-    	done; \
-    	test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
-    	apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
+      && apt-get update \
+      && apt-get install --no-install-recommends --no-install-suggests -y curl gnupg1 apt-transport-https ca-certificates \
+      && \
+      NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
+      found=''; \
+      for server in \
+        ha.pool.sks-keyservers.net \
+        hkp://keyserver.ubuntu.com:80 \
+        hkp://p80.pool.sks-keyservers.net:80 \
+        pgp.mit.edu \
+      ; do \
+        echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
+        apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
+      done; \
+      test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
+      apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
     # Prepare additional modules
         && curl -fSL https://github.com/evanmiller/mod_zip/archive/master.tar.gz -o mod_zip-master.tar.gz \
         && tar -zxC /usr/src -f mod_zip-master.tar.gz \
         && rm mod_zip-master.tar.gz \
     # Add nginx sources
-    	&& echo "deb https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
+      && echo "deb https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
         && echo "deb-src https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
         \
     # new directory for storing sources and .deb files
@@ -41,7 +41,7 @@ debian_nginx_build:
     # build .deb files from upstream's source packages (which are verified by apt-get)
         && apt-get update \
         && apt-get build-dep -y nginx=${NGINX_VERSION} \
-    						 nginx-module-xslt=${NGINX_VERSION} \
+                 nginx-module-xslt=${NGINX_VERSION} \
                              nginx-module-geoip=${NGINX_VERSION} \
                              nginx-module-image-filter=${NGINX_VERSION} \
                              nginx-module-njs=${NJS_VERSION} \
@@ -86,15 +86,15 @@ debian_nginx_modules_install:
     RUN apt-get -o Acquire::GzipIndexes=false update \
         && apt-get install --no-install-recommends --no-install-suggests -y \
                             nginx=${NGINX_VERSION} \
-    						nginx-module-xslt=${NGINX_VERSION} \
+                nginx-module-xslt=${NGINX_VERSION} \
                             nginx-module-geoip=${NGINX_VERSION} \
                             nginx-module-image-filter=${NGINX_VERSION} \
                             nginx-module-njs=${NJS_VERSION} \
-    						gettext-base \
+                gettext-base \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/* \
-    	&& rm -rf ${BUILD_DIR} \
-    	&& rm /etc/apt/sources.list.d/temp.list
+      && rm -rf ${BUILD_DIR} \
+      && rm /etc/apt/sources.list.d/temp.list
 
 debian_nginx_install:
   build: |

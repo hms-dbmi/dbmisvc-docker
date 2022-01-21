@@ -405,7 +405,7 @@ class Ubuntu(Target):
         return f"{cls.identifier}:{version}"
 
 
-def check_python_versions(python_versions, valid_python_versions=None):
+def check_python_versions(python_versions, valid_python_versions=None, forced=False):
     """
     Inspects the passed list of Python versions and filters out unsupported
     versions and returns the list.
@@ -414,6 +414,8 @@ def check_python_versions(python_versions, valid_python_versions=None):
     :type python_versions: list
     :param valid_python_versions: A list of supported Python version strings
     :type valid_python_versions: list, defaults to None
+    :param forced: Force the Python version even if it's no longer supported
+    :type forced: boolean
     :returns: A list of supported Python versions
     :rtype: list
     """
@@ -432,8 +434,11 @@ def check_python_versions(python_versions, valid_python_versions=None):
             f"is/are no longer supported and is/are not enabled for builds"
         )
 
-        # Trim it
-        python_versions = list(set(python_versions) & set(valid_python_versions))
+        # If not forced, drop unsupported versions
+        if not forced:
+
+            # Trim it
+            python_versions = list(set(python_versions) & set(valid_python_versions))
 
         if not python_versions:
             # Log it
@@ -474,6 +479,7 @@ def main(arguments):
                         type=str, default='hmsdbmitc/dbmisvc:')
     parser.add_argument('-p', '--push', help='Automatically push the image to Docker Hub', action='store_true')
     parser.add_argument('-n', '--print', help='Print Dockerfiles to stdout', action='store_true')
+    parser.add_argument('-f', '--force', help='Force build regardless of Python version status', action='store_true')
     parser.add_argument('-c', '--commit', help='The commit of the versioned build', type=str)
     parser.add_argument('--dryrun', help='Do a dry-run of the build', action='store_true')
 
@@ -492,7 +498,7 @@ def main(arguments):
         commit = repo.head.object.hexsha
 
     # Check python versions
-    args.pythons = check_python_versions(args.pythons, python_versions)
+    args.pythons = check_python_versions(args.pythons, python_versions, args.force)
 
     # Iterate targets
     for t in args.targets:
