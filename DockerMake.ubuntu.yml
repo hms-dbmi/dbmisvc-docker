@@ -6,17 +6,32 @@ ubuntu_python_version:
     ARG PYTHON_VERSION
 
     # Install needed packages
-    RUN apt-get update && apt-get install -y skopeo jq wget
+    RUN apt-get update && apt-get install -y skopeo jq wget bash
 
     # Use Docker image tags to get the latest full version of Python matching the passed minor version (e.g. 3.9 -> 3.9.6)
     RUN skopeo list-tags docker://docker.io/python | jq --arg pyreg "^${PYTHON_VERSION}.[0-9]+\$" \
         -r '[.Tags[] | select( test( $pyreg ) ) ] | sort_by( split( "." ) | map( tonumber ) ) | .[-1]' > /tmp/pyver
+
+    # Determine the GPG key to use
+    RUN ["/bin/bash", "-c", "declare -A PGP_KEYS=( \
+      ['3.11']='a035c8c19219ba821ecea86b64e628f8d684696d' \
+      ['3.10']='a035c8c19219ba821ecea86b64e628f8d684696d' \
+      ['3.9']='e3ff2839c048b25c084debe9b26995e310250568' \
+      ['3.8']='e3ff2839c048b25c084debe9b26995e310250568' \
+      ['3.7']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
+      ['3.6']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
+      ['3.5']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
+      ['3.4']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
+      ['2.7']='c01e1cad5ea2c4f0b8e3571504c367c218add4ff' \
+      ) \
+      && echo ${PGP_KEYS[$PYTHON_VERSION]} > /tmp/pygpg"]
 
 # Docker-make copies assets after included build commands so it's better to have copies as their own steps
 ubuntu_python_version_copy:
   copy_from:
     ubuntu_python_version:
       /tmp/pyver: /tmp/
+      /tmp/pygpg: /tmp/
 
 ubuntu_python_install:
   requires:
@@ -46,18 +61,7 @@ ubuntu_python_install:
     RUN set -ex \
       \
       && VERSION=`cat /tmp/pyver` \
-      && declare -A PGP_KEYS=( \
-      ['3.11']='a035c8c19219ba821ecea86b64e628f8d684696d' \
-      ['3.10']='a035c8c19219ba821ecea86b64e628f8d684696d' \
-      ['3.9']='e3ff2839c048b25c084debe9b26995e310250568' \
-      ['3.8']='e3ff2839c048b25c084debe9b26995e310250568' \
-      ['3.7']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
-      ['3.6']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
-      ['3.5']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
-      ['3.4']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
-      ['2.7']='c01e1cad5ea2c4f0b8e3571504c367c218add4ff' \
-      ) \
-      && PGP_KEY="${PGP_KEYS[$PYTHON_VERSION]}" \
+      && GPG_KEY=`cat /tmp/pygpg` \
       && DEBIAN_FRONTEND=noninteractive \
       && savedAptMark="$(apt-mark showmanual)" \
       && apt-get update && apt-get install -y --no-install-recommends \
@@ -226,11 +230,92 @@ ubuntu_python_venv_copy:
 
 ubuntu_nginx_install:
   build: |
-    RUN apt-get update \
-      && apt-get install -y --no-install-recommends \
-        nginx \
-      && apt-get clean \
-      && rm -rf /var/lib/apt/lists/*
+    ARG UBUNTU_CODENAME
+    ARG NGINX_VERSION
+    ARG NGINX_NJS_VERSION
+    ARG NGINX_PKG_RELEASE
+
+    RUN set -x \
+        && apt-get update \
+        && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
+        && \
+        NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
+        found=''; \
+        for server in \
+            hkp://keyserver.ubuntu.com:80 \
+            pgp.mit.edu \
+        ; do \
+            echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
+            apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
+        done; \
+        test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
+        apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
+        && dpkgArch="$(dpkg --print-architecture)" \
+        && nginxPackages=" \
+            nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+        " \
+        && case "$dpkgArch" in \
+            amd64|arm64) \
+        # arches officialy built by upstream
+                echo "deb https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
+                && apt-get update \
+                ;; \
+            *) \
+        # we're on an architecture upstream doesn't officially build for
+        # let's build binaries from the published source packages
+                echo "deb-src https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
+                \
+        # new directory for storing sources and .deb files
+                && tempDir="$(mktemp -d)" \
+                && chmod 777 "$tempDir" \
+        # (777 to ensure APT's "_apt" user can access it too)
+                \
+        # save list of currently-installed packages so build dependencies can be cleanly removed later
+                && savedAptMark="$(apt-mark showmanual)" \
+                \
+        # build .deb files from upstream's source packages (which are verified by apt-get)
+                && apt-get update \
+                && apt-get build-dep -y $nginxPackages \
+                && ( \
+                    cd "$tempDir" \
+                    && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
+                        apt-get source --compile $nginxPackages \
+                ) \
+        # we don't remove APT lists here because they get re-downloaded and removed later
+                \
+        # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+        # (which is done after we install the built packages so we don't have to redownload any overlapping dependencies)
+                && apt-mark showmanual | xargs apt-mark auto > /dev/null \
+                && { [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; } \
+                \
+        # create a temporary local APT repo to install from (so that dependency resolution can be handled by APT, as it should be)
+                && ls -lAFh "$tempDir" \
+                && ( cd "$tempDir" && dpkg-scanpackages . > Packages ) \
+                && grep '^Package: ' "$tempDir/Packages" \
+                && echo "deb [ trusted=yes ] file://$tempDir ./" > /etc/apt/sources.list.d/temp.list \
+        # work around the following APT issue by using "Acquire::GzipIndexes=false" (overriding "/etc/apt/apt.conf.d/docker-gzip-indexes")
+        #   Could not open file /var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages - open (13: Permission denied)
+        #   ...
+        #   E: Failed to fetch store:/var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages  Could not open file /var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages - open (13: Permission denied)
+                && apt-get -o Acquire::GzipIndexes=false update \
+                ;; \
+        esac \
+        \
+        && apt-get install --no-install-recommends --no-install-suggests -y \
+                            $nginxPackages \
+                            gettext-base \
+                            curl \
+        && apt-get remove --purge --auto-remove -y && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list \
+        \
+        # if we have leftovers from building, let's purge them (including extra, unnecessary build deps)
+        && if [ -n "$tempDir" ]; then \
+            apt-get purge -y --auto-remove \
+            && rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list; \
+        fi
 
 ubuntu_pip_build:
   requires:
