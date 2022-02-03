@@ -2,9 +2,10 @@ debian_nginx_build:
   FROM: python:{{ PYTHON_VERSION }}-slim-{{ DEBIAN_VERSION }}
   build: |
 
-    ARG NGINX_VERSION
-    ARG NJS_VERSION
     ARG DEBIAN_VERSION
+    ARG NGINX_VERSION
+    ARG NGINX_NJS_VERSION
+    ARG NGINX_PKG_RELEASE
     ARG BUILD_DIR=/tmp/dbmisvc_nginx_build
 
     # Run the build
@@ -30,8 +31,8 @@ debian_nginx_build:
         && tar -zxC /usr/src -f mod_zip-master.tar.gz \
         && rm mod_zip-master.tar.gz \
     # Add nginx sources
-      && echo "deb https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
-        && echo "deb-src https://nginx.org/packages/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
+      && echo "deb https://nginx.org/packages/mainline/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
+        && echo "deb-src https://nginx.org/packages/mainline/debian/ ${DEBIAN_VERSION} nginx" >> /etc/apt/sources.list.d/nginx.list \
         \
     # new directory for storing sources and .deb files
         && mkdir -p "${BUILD_DIR}" \
@@ -40,11 +41,12 @@ debian_nginx_build:
         \
     # build .deb files from upstream's source packages (which are verified by apt-get)
         && apt-get update \
-        && apt-get build-dep -y nginx=${NGINX_VERSION} \
-                 nginx-module-xslt=${NGINX_VERSION} \
-                             nginx-module-geoip=${NGINX_VERSION} \
-                             nginx-module-image-filter=${NGINX_VERSION} \
-                             nginx-module-njs=${NJS_VERSION} \
+        && apt-get build-dep -y \
+              nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
         && ( \
             cd "${BUILD_DIR}" \
             && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
@@ -57,10 +59,12 @@ debian_nginx_build:
     # Build other modules
             && cd "${BUILD_DIR}" \
             && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
-                apt-get source --compile nginx-module-xslt=${NGINX_VERSION} \
-                                         nginx-module-geoip=${NGINX_VERSION} \
-                                         nginx-module-image-filter=${NGINX_VERSION} \
-                                         nginx-module-njs=${NJS_VERSION} \
+                apt-get source --compile \
+                  nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+                  nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+                  nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+                  nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+                  nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
             ) \
         && ls -lAFh "${BUILD_DIR}" \
         && ( cd "${BUILD_DIR}" && dpkg-scanpackages . > Packages ) \
@@ -78,19 +82,21 @@ debian_nginx_modules_install:
     - debian_nginx_modules_copy
   build: |
 
+    ARG DEBIAN_VERSION
     ARG NGINX_VERSION
-    ARG NJS_VERSION
+    ARG NGINX_NJS_VERSION
+    ARG NGINX_PKG_RELEASE
     ARG BUILD_DIR=/tmp/dbmisvc_nginx_build
 
     # Install built debs and other packages
     RUN apt-get -o Acquire::GzipIndexes=false update \
         && apt-get install --no-install-recommends --no-install-suggests -y \
-                            nginx=${NGINX_VERSION} \
-                nginx-module-xslt=${NGINX_VERSION} \
-                            nginx-module-geoip=${NGINX_VERSION} \
-                            nginx-module-image-filter=${NGINX_VERSION} \
-                            nginx-module-njs=${NJS_VERSION} \
-                gettext-base \
+              nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+              gettext-base \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/* \
       && rm -rf ${BUILD_DIR} \
@@ -98,11 +104,92 @@ debian_nginx_modules_install:
 
 debian_nginx_install:
   build: |
-    RUN apt-get update \
-      && apt-get install -y --no-install-recommends \
-        nginx \
-      && apt-get clean \
-      && rm -rf /var/lib/apt/lists/*
+    ARG DEBIAN_VERSION
+    ARG NGINX_VERSION
+    ARG NGINX_NJS_VERSION
+    ARG NGINX_PKG_RELEASE
+
+    RUN set -x \
+        && apt-get update \
+        && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
+        && \
+        NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
+        found=''; \
+        for server in \
+            hkp://keyserver.ubuntu.com:80 \
+            pgp.mit.edu \
+        ; do \
+            echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
+            apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
+        done; \
+        test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
+        apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
+        && dpkgArch="$(dpkg --print-architecture)" \
+        && nginxPackages=" \
+            nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+            nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+            nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+            nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+            nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${DEBIAN_VERSION} \
+        " \
+        && case "$dpkgArch" in \
+            amd64|arm64) \
+        # arches officialy built by upstream
+                echo "deb https://nginx.org/packages/mainline/debian/ $DEBIAN_VERSION nginx" >> /etc/apt/sources.list.d/nginx.list \
+                && apt-get update \
+                ;; \
+            *) \
+        # we're on an architecture upstream doesn't officially build for
+        # let's build binaries from the published source packages
+                echo "deb-src https://nginx.org/packages/mainline/debian/ $DEBIAN_VERSION nginx" >> /etc/apt/sources.list.d/nginx.list \
+                \
+        # new directory for storing sources and .deb files
+                && tempDir="$(mktemp -d)" \
+                && chmod 777 "$tempDir" \
+        # (777 to ensure APT's "_apt" user can access it too)
+                \
+        # save list of currently-installed packages so build dependencies can be cleanly removed later
+                && savedAptMark="$(apt-mark showmanual)" \
+                \
+        # build .deb files from upstream's source packages (which are verified by apt-get)
+                && apt-get update \
+                && apt-get build-dep -y $nginxPackages \
+                && ( \
+                    cd "$tempDir" \
+                    && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
+                        apt-get source --compile $nginxPackages \
+                ) \
+        # we don't remove APT lists here because they get re-downloaded and removed later
+                \
+        # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+        # (which is done after we install the built packages so we don't have to redownload any overlapping dependencies)
+                && apt-mark showmanual | xargs apt-mark auto > /dev/null \
+                && { [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; } \
+                \
+        # create a temporary local APT repo to install from (so that dependency resolution can be handled by APT, as it should be)
+                && ls -lAFh "$tempDir" \
+                && ( cd "$tempDir" && dpkg-scanpackages . > Packages ) \
+                && grep '^Package: ' "$tempDir/Packages" \
+                && echo "deb [ trusted=yes ] file://$tempDir ./" > /etc/apt/sources.list.d/temp.list \
+        # work around the following APT issue by using "Acquire::GzipIndexes=false" (overriding "/etc/apt/apt.conf.d/docker-gzip-indexes")
+        #   Could not open file /var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages - open (13: Permission denied)
+        #   ...
+        #   E: Failed to fetch store:/var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages  Could not open file /var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages - open (13: Permission denied)
+                && apt-get -o Acquire::GzipIndexes=false update \
+                ;; \
+        esac \
+        \
+        && apt-get install --no-install-recommends --no-install-suggests -y \
+                            $nginxPackages \
+                            gettext-base \
+                            curl \
+        && apt-get remove --purge --auto-remove -y && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list \
+        \
+        # if we have leftovers from building, let's purge them (including extra, unnecessary build deps)
+        && if [ -n "$tempDir" ]; then \
+            apt-get purge -y --auto-remove \
+            && rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list; \
+        fi
 
 debian_pip_build:
   build_directory: ./
