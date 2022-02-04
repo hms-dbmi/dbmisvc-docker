@@ -10,10 +10,28 @@ _SOURCES_:
   - DockerMake.debian.yml
   - DockerMake.ubuntu.yml
 
+_GLOBALS_: &globals
+  NGINX_VERSION: "1.21.6"
+  NGINX_NJS_VERSION: "0.7.2"
+  NGINX_PKG_RELEASE: "1"
+
 alpine:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine{{ ALPINE_VERSION|default('3.14') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine{{ ALPINE_VERSION|default('3.15') }}"
   build_args:
-    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.14') }}"
+    << : *globals
+    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.15') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_build
+    - base_base_build
+
+alpine3.15:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.15"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.15
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
@@ -24,6 +42,7 @@ alpine:
 alpine3.14:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.14"
   build_args:
+    << : *globals
     ALPINE_VERSION: 3.14
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
@@ -35,6 +54,7 @@ alpine3.14:
 alpine3.13:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.13"
   build_args:
+    << : *globals
     ALPINE_VERSION: 3.13
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
@@ -46,6 +66,7 @@ alpine3.13:
 alpine3.12:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.12"
   build_args:
+    << : *globals
     ALPINE_VERSION: 3.12
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
@@ -57,6 +78,7 @@ alpine3.12:
 alpine3.11:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.11"
   build_args:
+    << : *globals
     ALPINE_VERSION: 3.11
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
@@ -65,70 +87,11 @@ alpine3.11:
     - alpine_build
     - base_base_build
 
-alpine-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine{{ ALPINE_VERSION|default('3.14') }}"
-  build_args:
-    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.14') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.21.0"
-  requires:
-    - base_meta
-    - alpine_nginx_modules_install
-    - alpine_build
-    - base_base_build
-
-alpine3.14-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.14"
-  build_args:
-    ALPINE_VERSION: "3.14"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.21.0"
-  requires:
-    - base_meta
-    - alpine_nginx_modules_install
-    - alpine_build
-    - base_base_build
-
-alpine3.13-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.13"
-  build_args:
-    ALPINE_VERSION: 3.13
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.21.0"
-  requires:
-    - base_meta
-    - alpine_nginx_modules_install
-    - alpine_build
-    - base_base_build
-
-alpine3.12-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.12"
-  build_args:
-    ALPINE_VERSION: 3.12
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.21.0"
-  requires:
-    - base_meta
-    - alpine_nginx_modules_install
-    - alpine_build
-    - base_base_build
-
-alpine3.11-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.11"
-  build_args:
-    ALPINE_VERSION: 3.11
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.21.0"
-  requires:
-    - base_meta
-    - alpine_nginx_modules_install
-    - alpine_build
-    - base_base_build
-
 debian:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-{{ DEBIAN_VERSION|default('bullseye') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-{{ DEBIAN_CODENAME|default('bullseye') }}"
   build_args:
-    DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('bullseye') }}"
+    << : *globals
+    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bullseye') }}"
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
@@ -139,7 +102,8 @@ debian:
 debian11:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-bullseye"
   build_args:
-    DEBIAN_VERSION: bullseye
+    << : *globals
+    DEBIAN_CODENAME: bullseye
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
@@ -150,7 +114,8 @@ debian11:
 debian10:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-buster"
   build_args:
-    DEBIAN_VERSION: buster
+    << : *globals
+    DEBIAN_CODENAME: buster
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
@@ -161,92 +126,44 @@ debian10:
 debian9:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-stretch"
   build_args:
-    DEBIAN_VERSION: stretch
+    << : *globals
+    DEBIAN_CODENAME: stretch
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
     - debian_nginx_install
-    - debian_build
-    - base_base_build
-
-debian-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-{{ DEBIAN_VERSION|default('bullseye') }}"
-  build_args:
-    DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('bullseye') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.20.1-1~buster"
-    NJS_VERSION: "1.20.1+0.6.1-1~buster"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-debian11-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-bullseye"
-  build_args:
-    DEBIAN_VERSION: bullseye
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.20.1-1~buster"
-    NJS_VERSION: "1.20.1+0.6.1-1~buster"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-debian10-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-buster"
-  build_args:
-    DEBIAN_VERSION: buster
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.20.1-1~buster"
-    NJS_VERSION: "1.20.1+0.6.1-1~buster"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-debian9-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-stretch"
-  build_args:
-    DEBIAN_VERSION: stretch
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.18.0-2~stretch"
-    NJS_VERSION: "1.18.0.0.4.4-2~stretch"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
     - debian_build
     - base_base_build
 
 debian-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-{{ DEBIAN_VERSION|default('bullseye') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-{{ DEBIAN_CODENAME|default('bullseye') }}"
   build_args:
-    DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('bullseye') }}"
+    << : *globals
+    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bullseye') }}"
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
-    - debian_nginx_install
+    - debian_nginx_prebuilt_install
     - debian_build
     - base_base_build
 
 debian11-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-bullseye"
   build_args:
-    DEBIAN_VERSION: bullseye
+    << : *globals
+    DEBIAN_CODENAME: bullseye
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
-    - debian_nginx_install
+    - debian_nginx_prebuilt_install
     - debian_build
     - base_base_build
 
 debian10-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-buster"
   build_args:
-    DEBIAN_VERSION: buster
+    << : *globals
+    DEBIAN_CODENAME: buster
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
@@ -257,7 +174,8 @@ debian10-slim:
 debian9-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-stretch"
   build_args:
-    DEBIAN_VERSION: stretch
+    << : *globals
+    DEBIAN_CODENAME: stretch
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
@@ -265,69 +183,13 @@ debian9-slim:
     - debian_build
     - base_base_build
 
-debian-slim-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-{{ DEBIAN_VERSION|default('bullseye') }}"
-  build_args:
-    DEBIAN_VERSION: "{{ DEBIAN_VERSION|default('bullseye') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.20.1-1~bullseye"
-    NJS_VERSION: "1.20.1+0.7.0-1~bullseye"
-    XSLT_VERSION: "1.20.1~bullseye"
-    GEOIP_VERSION: "1.20.1~bullseye"
-    PERL_VERSION: "1.20.1~bullseye"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-debian11-slim-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-bullseye"
-  build_args:
-    DEBIAN_VERSION: bullseye
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.20.1-1~bullseye"
-    NJS_VERSION: "1.20.1+0.7.0-1~bullseye"
-    XSLT_VERSION: "1.20.1~bullseye"
-    GEOIP_VERSION: "1.20.1~bullseye"
-    PERL_VERSION: "1.20.1~bullseye"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-debian10-slim-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-buster"
-  build_args:
-    DEBIAN_VERSION: buster
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.20.1-1~buster"
-    NJS_VERSION: "1.20.1+0.7.0-1~buster"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
-debian9-slim-zip:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-stretch"
-  build_args:
-    DEBIAN_VERSION: stretch
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    NGINX_VERSION: "1.18.0-2~stretch"
-    NJS_VERSION: "1.18.0.0.4.4-2~stretch"
-  requires:
-    - base_meta
-    - debian_nginx_modules_install
-    - debian_build
-    - base_base_build
-
 ubuntu:
   FROM: "ubuntu:{{ UBUNTU_VERSION|default('20.04') }}"
   build_args:
+    << : *globals
     UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('20.04') }}"
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+    UBUNTU_CODENAME: "{{ UBUNTU_CODENAME|default('focal') }}"
   requires:
     - base_meta
     - ubuntu_python_install
@@ -338,8 +200,10 @@ ubuntu:
 ubuntu20.04:
   FROM: "ubuntu:20.04"
   build_args:
+    << : *globals
     UBUNTU_VERSION: 20.04
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+    UBUNTU_CODENAME: "focal"
   requires:
     - base_meta
     - ubuntu_python_install
@@ -350,8 +214,10 @@ ubuntu20.04:
 ubuntu18.04:
   FROM: "ubuntu:18.04"
   build_args:
+    << : *globals
     UBUNTU_VERSION: 18.04
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+    UBUNTU_CODENAME: "bionic"
   requires:
     - base_meta
     - ubuntu_python_install
@@ -361,33 +227,20 @@ ubuntu18.04:
 
 _ALL_:
  - alpine
+ - alpine3.15
  - alpine3.14
  - alpine3.13
  - alpine3.12
- - alpine-zip
- - alpine3.14-zip
- - alpine3.13-zip
- - alpine3.12-zip
  - debian-slim
  - debian11-slim
  - debian10-slim
  - debian9-slim
  - debian8-slim
- - debian-slim-zip
- - debian11-slim-zip
- - debian10-slim-zip
- - debian9-slim-zip
- - debian8-slim-zip
  - debian
  - debian11
  - debian10
  - debian9
  - debian8
- - debian-zip
- - debian11-zip
- - debian10-zip
- - debian9-zip
- - debian8-zip
  - ubuntu
  - ubuntu20.04
  - ubuntu18.04

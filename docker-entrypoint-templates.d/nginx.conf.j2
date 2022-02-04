@@ -6,6 +6,11 @@ pid {{ DBMI_NGINX_PID_PATH }};
 
 include /etc/nginx/modules-enabled/*.conf;
 
+{% if DBMI_FILE_PROXY is defined and DBMI_FILE_PROXY %}
+# Load zip module
+load_module /usr/lib/nginx/modules/ngx_http_zip_module.so;
+{% endif %}
+
 events {
 	worker_connections 768;
 	# multi_accept on;
