@@ -87,9 +87,16 @@ alpine_nginx_modules_build:
       && mkdir -p ${NGINX_MODULES_DIR} \
       && cp ${tempDir}/nginx-${NGINX_VERSION}/objs/ngx_http_zip_module.so ${NGINX_MODULES_DIR}/
 
+alpine_nginx_modules_copy:
+  copy_from:
+    alpine_nginx_modules_build:
+      /usr/src/dbmisvc/output/ngx_http_zip_module.so: /usr/lib/nginx/modules/
+
 alpine_nginx_install:
   build_directory: ./
   FROM: python:{{ PYTHON_VERSION }}-alpine{{ ALPINE_VERSION }}
+  requires:
+    - alpine_nginx_modules_copy
   build: |
     ARG ALPINE_VERSION
     ARG NGINX_VERSION
@@ -198,11 +205,6 @@ alpine_nginx_install:
         && apk add --no-cache tzdata \
     # Bring in curl and ca-certificates to make registering on DNS SD easier
         && apk add --no-cache curl ca-certificates
-
-alpine_nginx_modules_copy:
-  copy_from:
-    alpine_nginx_modules_build:
-      /usr/src/dbmisvc/output/ngx_http_zip_module.so: /usr/lib/nginx/modules/
 
 alpine_pip_build:
   requires:
