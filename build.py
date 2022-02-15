@@ -6,6 +6,7 @@ Usage:
     build.py build [options] [-y <pythons>]... [-a <alpines>]... [-d <debians>]... [-u <ubuntus>]... -- <targets>...
     build.py <target> [options] -- <os-version> <python-version>
     build.py versions <target>
+    build.py version
 
 Options:
     -y <pythons>, --pythons <pythons>               The versions of Python to build.
@@ -897,12 +898,14 @@ def versions(args):
         logger.exception(f"Error: {e}", exc_info=True)
 
 if __name__ == '__main__':
-    arguments = docopt(__doc__, version='DBMISVC Docker Image Builder 1.0')
+    arguments = docopt(__doc__)
 
     # Run command
     if arguments["versions"]:
         print(json.dumps(versions(arguments)))
     elif arguments["build"] or arguments["<target>"]:
         build(arguments)
+    elif arguments["version"]:
+        print(Target.get_version())
     else:
         raise NotImplementedError(f"Command not yet implemented")
