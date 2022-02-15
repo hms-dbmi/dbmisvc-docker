@@ -48,17 +48,17 @@ jobs:
     - name: Set repo input
       id: repo-input
       run: |
-        REPO_INPUT=${{ inputs.repo }}
+        REPO_INPUT=${{ github.event.inputs.repo }}
         echo "::set-output name=repo::${REPO_INPUT:-"${{ secrets.DBMISVC_REPO }}"}"
 
     - id: build-target
       name: Build Target
       uses: ./.github/actions/build-target
       with:
-        target: "${{ inputs.target }}"
-        os-version: "${{ inputs.os-version }}"
-        python-version: "${{ inputs.python-version }}"
+        target: "${{ github.event.inputs.target }}"
+        os-version: "${{ github.event.inputs.os-version }}"
+        python-version: "${{ github.event.inputs.python-version }}"
         repo: "${{ steps.repo-input.outputs.repo }}"
-        push: "${{ inputs.push }}"
+        push: "${{ github.event.inputs.push }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
