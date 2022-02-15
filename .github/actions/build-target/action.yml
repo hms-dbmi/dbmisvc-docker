@@ -25,6 +25,10 @@ inputs:
   push:
     description: Whether to push the image to Docker Hub
     required: false
+  options:
+    description: Additional options to pass to the build command
+    required: false
+    default: ""
 
 runs:
   using: "composite"
@@ -52,6 +56,14 @@ runs:
       username: ${{ inputs.docker-username }}
       password: ${{ inputs.docker-password }}
 
+  - name: Set image version
+    id: set-version
+    shell: bash
+    run: |
+      # Determine version
+      VERSION=${{ inputs.version }}
+      echo "::set-output name=version::${VERSION:-`python build.py version`}"
+
   - name: Build and push DBMISVC images
     shell: bash
     env:
@@ -65,7 +77,8 @@ runs:
       echo "Repo: '${{inputs.repo}}'"
       echo "Push: '${PUSH}'"
       python build.py ${{ inputs.target }} \
-        --version ${{ inputs.version }} \
+        --version ${{ steps.set-version.outputs.version }} \
         --repo ${{ inputs.repo }} \
         ${PUSH} \
+        ${{ inputs.options }} \
         -- ${{ inputs.os-version }} ${{ inputs.python-version }}
