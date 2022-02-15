@@ -1,0 +1,55 @@
+name: Build Target
+
+on:
+  workflow_dispatch:
+    inputs:
+      target:
+        type: choice
+        description: The target to build
+        required: true
+        options:
+        - debian
+        - debian-slim
+        - alpine
+        - ubuntu
+      os-version:
+        description: The version of the target's OS to build
+        required: true
+      python-version:
+        type: choice
+        description: The version of Python to build the target for
+        required: true
+        options:
+        - "3.10"
+        - "3.9"
+        - "3.8"
+        - "3.7"
+        - "2.7"
+      push:
+        type: choice
+        description: Whether to push the image to Docker Hub or not
+        required: true
+        options:
+        - "true"
+        - "false"
+      repo:
+        description: The base name to use for the image tags
+        required: false
+        default: "hmsdbmitc/dbmisvc:"
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+
+    - id: build-target
+      name: Build Target
+      uses: ./.github/actions/build-target
+      with:
+        target: "${{ inputs.target }}"
+        os-version: "${{ inputs.os-version }}"
+        python-version: "${{ inputs.python-version }}"
+        repo: "${{ fromJson( [ secrets.DBMISVC_REPO, inputs.repo ] )[ inputs.repo == '' ] }}"
+        push: "${{ inputs.push }}"
+        docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
+        docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
