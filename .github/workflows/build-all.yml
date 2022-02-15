@@ -23,7 +23,7 @@ jobs:
     - name: Set up Python 3.10
       uses: actions/setup-python@v2
       with:
-        python-version: 3.10
+        python-version: "3.10"
 
     - name: Install Python packages
       run: |
@@ -111,7 +111,6 @@ jobs:
       uses: ./.github/actions/build-target
       with:
         target: "debian"
-        os-version-flag: "-d"
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
@@ -136,7 +135,6 @@ jobs:
       uses: ./.github/actions/build-target
       with:
         target: "debian-slim"
-        os-version-flag: "-d"
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
@@ -161,7 +159,6 @@ jobs:
       uses: ./.github/actions/build-target
       with:
         target: "alpine"
-        os-version-flag: "-a"
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
@@ -186,7 +183,6 @@ jobs:
       uses: ./.github/actions/build-target
       with:
         target: "ubuntu"
-        os-version-flag: "-u"
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
