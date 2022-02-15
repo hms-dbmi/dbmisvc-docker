@@ -1,0 +1,22 @@
+{
+    "branches": [
+        "master",
+        {"name": "development", "channel": "pre/rc", "prerelease": "rc"},
+        {"name": "beta", "prerelease": true},
+        {"name": "alpha", "prerelease": true}
+    ],
+    "plugins": [
+        "@semantic-release/commit-analyzer",
+        "@semantic-release/release-notes-generator",
+        ["@semantic-release/changelog", {
+            "changelogFile": "CHANGELOG.md"
+        }],
+        ["@semantic-release/exec", {
+          "prepareCmd": "sed -ie \"s/^# Version:.*/# Version: ${nextRelease.version}/g\" DockerMake.yml && sed -ie 's/\x22version\x22:[ ]*\x22[0-9.]*\x22/\x22version\x22: \x22${nextRelease.version}\x22/g' package.json && npm install"
+        }],
+        ["@semantic-release/git", {
+            "assets": ["DockerMake.yml", "CHANGELOG.md", "package.json", "package-lock.json"]
+        }]
+    ],
+    "preset": "angular"
+}

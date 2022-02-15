@@ -1,0 +1,23 @@
+{
+  "name": "dbmisvc-docker",
+  "version": "0.1.1",
+  "homepage": "https://github.com/hms-dbmi/dbmisvc-docker",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hms-dbmi/dbmisvc-docker.git"
+  },
+  "bugs": {
+    "url": "https://github.com/hms-dbmi/dbmisvc-docker/issues"
+  },
+  "license": "GPL-3.0+",
+  "author": {
+    "name": "Bryan Larson",
+    "email": "bryan_larson@hms.harvard.edu"
+  },
+  "dependencies": {
+    "@semantic-release/changelog": "^6.0.1",
+    "@semantic-release/exec": "^6.0.3",
+    "@semantic-release/git": "^10.0.1",
+    "semantic-release": "^19.0.2"
+  }
+}
