@@ -1,0 +1,38 @@
+base_meta:
+  build: |
+    LABEL org.label-schema.schema-version=1.0 \
+      org.label-schema.vendor="HMS-DBMI" \
+      org.label-schema.version="{{ VERSION }}" \
+      org.label-schema.name="dbmisvc" \
+      org.label-schema.build-date="{{ DATE }}" \
+      org.label-schema.description="DBMISVC base image" \
+      org.label-schema.url="https://github.com/hms-dbmi/dbmisvc-docker" \
+      org.label-schema.vcs-url="https://github.com/hms-dbmi/dbmisvc-docker" \
+      org.label-schema.vcf-ref="{{ COMMIT }}"
+
+    # Add requirements
+    ARG BUILD_ENV=prod
+    ARG APP_ROOT=/app
+
+base_base_build:
+  build_directory: ./
+  build: |
+
+    # Add requirements
+    ADD image-requirements.txt /image-requirements.txt
+    RUN pip install -r /image-requirements.txt
+
+    # Copy scripts, templates and resources
+    ADD docker-entrypoint-templates.d/ /docker-entrypoint-templates.d/
+    ADD docker-entrypoint-resources.d/ /docker-entrypoint-resources.d/
+    ADD docker-entrypoint-init.d/ /docker-entrypoint-init.d/
+    ADD docker-entrypoint.d/ /docker-entrypoint.d/
+
+    # Add the init script and make it executable
+    ADD docker-entrypoint.sh /docker-entrypoint.sh
+    RUN chmod a+x docker-entrypoint.sh
+
+    ENTRYPOINT ["dumb-init", "/docker-entrypoint.sh"]
+
+    CMD gunicorn ${DBMI_APP_WSGI}.wsgi:application -b unix:/tmp/gunicorn.sock \
+        --user ${DBMI_NGINX_USER} --group ${DBMI_NGINX_USER} --chdir=${DBMI_APP_ROOT}

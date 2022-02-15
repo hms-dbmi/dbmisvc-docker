@@ -1,0 +1,452 @@
+ubuntu_python_version:
+  FROM: debian:bullseye-slim
+  build: |
+
+    # We need python version
+    ARG PYTHON_VERSION
+
+    # Install needed packages
+    RUN apt-get update && apt-get install -y skopeo jq wget bash
+
+    # Use Docker image tags to get the latest full version of Python matching the passed minor version (e.g. 3.9 -> 3.9.6)
+    RUN skopeo list-tags docker://docker.io/python | jq --arg pyreg "^${PYTHON_VERSION}.[0-9]+\$" \
+        -r '[.Tags[] | select( test( $pyreg ) ) ] | sort_by( split( "." ) | map( tonumber ) ) | .[-1]' > /tmp/pyver
+
+    # Determine the GPG key to use
+    RUN ["/bin/bash", "-c", "declare -A PGP_KEYS=( \
+      ['3.11']='a035c8c19219ba821ecea86b64e628f8d684696d' \
+      ['3.10']='a035c8c19219ba821ecea86b64e628f8d684696d' \
+      ['3.9']='e3ff2839c048b25c084debe9b26995e310250568' \
+      ['3.8']='e3ff2839c048b25c084debe9b26995e310250568' \
+      ['3.7']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
+      ['3.6']='0d96df4d4110e5c43fbfb17f2d347ea6aa65421d' \
+      ['3.5']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
+      ['3.4']='97FC712E4C024BBEA48A61ED3A5CA953F73C700D' \
+      ['2.7']='c01e1cad5ea2c4f0b8e3571504c367c218add4ff' \
+      ) \
+      && echo ${PGP_KEYS[$PYTHON_VERSION]} > /tmp/pygpg"]
+
+# Docker-make copies assets after included build commands so it's better to have copies as their own steps
+ubuntu_python_version_copy:
+  copy_from:
+    ubuntu_python_version:
+      /tmp/pyver: /tmp/
+      /tmp/pygpg: /tmp/
+
+ubuntu_python_install:
+  requires:
+    - ubuntu_python_version_copy
+  build: |
+
+    # Set python version
+    ARG PYTHON_VERSION
+    ARG TIMEZONE=America/New_York
+
+    # ensure local python is preferred over distribution python
+    ENV PATH /usr/local/bin:$PATH
+
+    # http://bugs.python.org/issue19846
+    # > At the moment, setting "LANG=C" on a Linux system *fundamentally breaks Python 3*, and that's not OK.
+    ENV LANG C.UTF-8
+
+    RUN set -eux \
+      && apt-get update \
+      && DEBIAN_FRONTEND=noninteractive TZ=${TIMEZONE} \
+      apt-get install -y --no-install-recommends \
+        ca-certificates \
+        netbase \
+        tzdata \
+      ; \
+      rm -rf /var/lib/apt/lists/*
+
+    # Install needed dependencies for compiling Python
+    RUN set -ex \
+      \
+      && VERSION=`cat /tmp/pyver` \
+      && GPG_KEY=`cat /tmp/pygpg` \
+      && DEBIAN_FRONTEND=noninteractive TZ=${TIMEZONE} \
+      && savedAptMark="$(apt-mark showmanual)" \
+      && apt-get update && apt-get install -y --no-install-recommends \
+        dpkg-dev \
+        gcc \
+        libbluetooth-dev \
+        libbz2-dev \
+        libc6-dev \
+        libexpat1-dev \
+        libffi-dev \
+        libgdbm-dev \
+        liblzma-dev \
+        libncursesw5-dev \
+        libreadline-dev \
+        libsqlite3-dev \
+        libssl-dev \
+        make \
+        tk-dev \
+        uuid-dev \
+        wget \
+        xz-utils \
+        zlib1g-dev \
+    # as of Stretch, "gpg" is no longer included by default
+        $(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
+      \
+      && wget --quiet -O python.tar.xz "https://www.python.org/ftp/python/${VERSION}/Python-$VERSION.tar.xz" \
+      && wget --quiet -O python.tar.xz.asc "https://www.python.org/ftp/python/${VERSION}/Python-$VERSION.tar.xz.asc" \
+      && export GNUPGHOME="$(mktemp -d)" \
+      && gpg --batch --keyserver hkps://keys.openpgp.org --recv-keys "$GPG_KEY" \
+      && gpg --batch --verify python.tar.xz.asc python.tar.xz \
+      && { command -v gpgconf > /dev/null && gpgconf --kill all || :; } \
+      && rm -rf "$GNUPGHOME" python.tar.xz.asc \
+      && mkdir -p /usr/src/python \
+      && tar -xJC /usr/src/python --strip-components=1 -f python.tar.xz \
+      && rm python.tar.xz \
+      \
+      && cd /usr/src/python \
+      && gnuArch="$(dpkg-architecture --query DEB_BUILD_GNU_TYPE)" \
+      && ./configure \
+        --build="$gnuArch" \
+        --enable-loadable-sqlite-extensions \
+        --enable-optimizations \
+        --enable-option-checking=fatal \
+        --enable-shared \
+        --with-system-expat \
+        --with-system-ffi \
+        --without-ensurepip \
+      && make -j "$(nproc)" \
+        LDFLAGS="-Wl,--strip-all" \
+    # setting PROFILE_TASK makes "--enable-optimizations" reasonable: https://bugs.python.org/issue36044 / https://github.com/docker-library/python/issues/160#issuecomment-509426916
+        PROFILE_TASK='-m test.regrtest --pgo \
+          test_array \
+          test_base64 \
+          test_binascii \
+          test_binhex \
+          test_binop \
+          test_bytes \
+          test_c_locale_coercion \
+          test_class \
+          test_cmath \
+          test_codecs \
+          test_compile \
+          test_complex \
+          test_csv \
+          test_decimal \
+          test_dict \
+          test_float \
+          test_fstring \
+          test_hashlib \
+          test_io \
+          test_iter \
+          test_json \
+          test_long \
+          test_math \
+          test_memoryview \
+          test_pickle \
+          test_re \
+          test_set \
+          test_slice \
+          test_struct \
+          test_threading \
+          test_time \
+          test_traceback \
+          test_unicode \
+        ' \
+      && make install \
+      && rm -rf /usr/src/python \
+      \
+      && find /usr/local -depth \
+        \( \
+          \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+          -o \( -type f -a \( -name '*.pyc' -o -name '*.pyo' -o -name '*.a' \) \) \
+          -o \( -type f -a -name 'wininst-*.exe' \) \
+        \) -exec rm -rf '{}' + \
+      \
+      && ldconfig \
+      \
+      && apt-mark auto '.*' > /dev/null \
+      && apt-mark manual $savedAptMark \
+      && find /usr/local -type f -executable -not \( -name '*tkinter*' \) -exec ldd '{}' ';' | \
+        awk '/=>/ { print $(NF-1) }' | \
+        sort -u | \
+        xargs -r dpkg-query --search | \
+        cut -d: -f1 | \
+        sort -u | \
+        xargs -r apt-mark manual \
+      && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false \
+      && rm -rf /var/lib/apt/lists/* \
+      \
+      && python3 --version
+
+    # Create symlinks
+    RUN cd /usr/local/bin \
+      && MAJOR=`cat /tmp/pyver | cut -d. -f1` \
+      && ln -sf easy_install-${MAJOR} easy_install \
+      && ln -sf idle${MAJOR} idle \
+      && ln -sf pydoc${MAJOR} pydoc \
+      && ln -sf python${MAJOR} python \
+      && ln -sf python-config${MAJOR} python-config
+
+    RUN set -ex; \
+      \
+      savedAptMark="$(apt-mark showmanual)"; \
+      apt-get update; \
+      apt-get install -y --no-install-recommends wget; \
+      \
+      wget --quiet -O get-pip.py "https://bootstrap.pypa.io/get-pip.py"; \
+      \
+      apt-mark auto '.*' > /dev/null; \
+      [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; \
+      apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false; \
+      rm -rf /var/lib/apt/lists/*; \
+      \
+      python get-pip.py \
+        --disable-pip-version-check \
+        --no-cache-dir \
+      ; \
+      pip --version; \
+      \
+      find /usr/local -depth \
+        \( \
+          \( -type d -a \( -name test -o -name tests -o -name idle_test \) \) \
+          -o \
+          \( -type f -a \( -name '*.pyc' -o -name '*.pyo' \) \) \
+        \) -exec rm -rf '{}' +; \
+      rm -f get-pip.py
+
+    # Create symlinks
+    RUN cd /usr/local/bin \
+      && MAJOR=`cat /tmp/pyver | cut -d. -f1` \
+      && ln -sf pip${MAJOR} pip \
+      && pip${MAJOR} --no-cache-dir install --upgrade pip
+
+    # Create virtualenv
+    RUN python -m venv /opt/base-env
+
+# Docker-make copies assets after included build commands so it's better to have copies as their own steps
+ubuntu_python_venv_copy:
+  copy_from:
+    ubuntu_python_install:
+      /opt/base-env: /opt/
+  build: |
+
+      # Use venv binaries
+      ENV PATH="/opt/base-env/bin:$PATH"
+
+ubuntu_nginx_modules_build:
+  build_directory: ./
+  FROM: "ubuntu:{{ UBUNTU_VERSION }}"
+  build: |
+
+    ARG UBUNTU_CODENAME
+    ARG NGINX_VERSION
+    ARG NGINX_NJS_VERSION
+    ARG NGINX_PKG_RELEASE
+    ARG TIMEZONE=America/New_York
+
+    ENV NGINX_MODULES_DIR /usr/src/dbmisvc/output
+
+    RUN set -x \
+      && tempDir="$(mktemp -d)" \
+      && apt-get update \
+      && DEBIAN_FRONTEND=noninteractive TZ=${TIMEZONE} \
+      apt-get install --no-install-recommends --no-install-suggests -y \
+        curl \
+        apt-transport-https \
+        build-essential \
+        software-properties-common \
+        zlib1g-dev \
+        libxml2-dev \
+        libxslt-dev \
+        libgd-dev \
+        libgeoip-dev \
+        libperl-dev \
+        libpcre3-dev \
+        libbz2-dev \
+        libssl-dev \
+        tar \
+        gzip \
+      && cd ${tempDir} \
+      && curl -fSL https://github.com/evanmiller/mod_zip/archive/master.tar.gz -o mod_zip-master.tar.gz \
+      && tar xzvf mod_zip-master.tar.gz \
+      && curl -f -O https://nginx.org/download/nginx-${NGINX_VERSION}.tar.gz \
+      && tar xzvf nginx-${NGINX_VERSION}.tar.gz \
+      && cd nginx-${NGINX_VERSION} \
+      && CONFIG="\
+          --prefix=/etc/nginx \
+          --sbin-path=/usr/sbin/nginx \
+          --modules-path=/usr/lib/nginx/modules \
+          --conf-path=/etc/nginx/nginx.conf \
+          --error-log-path=/var/log/nginx/error.log \
+          --http-log-path=/var/log/nginx/access.log \
+          --pid-path=/var/run/nginx.pid \
+          --lock-path=/var/run/nginx.lock \
+          --http-client-body-temp-path=/var/cache/nginx/client_temp \
+          --http-proxy-temp-path=/var/cache/nginx/proxy_temp \
+          --http-fastcgi-temp-path=/var/cache/nginx/fastcgi_temp \
+          --http-uwsgi-temp-path=/var/cache/nginx/uwsgi_temp \
+          --http-scgi-temp-path=/var/cache/nginx/scgi_temp \
+          --user=www-data \
+          --group=www-data \
+          --with-http_ssl_module \
+          --with-http_realip_module \
+          --with-http_addition_module \
+          --with-http_sub_module \
+          --with-http_dav_module \
+          --with-http_flv_module \
+          --with-http_mp4_module \
+          --with-http_gunzip_module \
+          --with-http_gzip_static_module \
+          --with-http_random_index_module \
+          --with-http_secure_link_module \
+          --with-http_stub_status_module \
+          --with-http_auth_request_module \
+          --with-http_xslt_module=dynamic \
+          --with-http_image_filter_module=dynamic \
+          --with-http_geoip_module=dynamic \
+          --with-threads \
+          --with-stream \
+          --with-stream_ssl_module \
+          --with-stream_ssl_preread_module \
+          --with-stream_realip_module \
+          --with-stream_geoip_module=dynamic \
+          --with-http_slice_module \
+          --with-mail \
+          --with-mail_ssl_module \
+          --with-compat \
+          --with-file-aio \
+          --with-http_v2_module \
+          --add-dynamic-module=${tempDir}/mod_zip-master \
+      " \
+      && ./configure --with-compat $CONFIG \
+      && make modules \
+      && mkdir -p ${NGINX_MODULES_DIR} \
+      && cp ${tempDir}/nginx-${NGINX_VERSION}/objs/ngx_http_zip_module.so ${NGINX_MODULES_DIR}/
+
+ubuntu_nginx_modules_copy:
+  copy_from:
+    ubuntu_nginx_modules_build:
+      /usr/src/dbmisvc/output/ngx_http_zip_module.so: /usr/lib/nginx/modules/
+
+ubuntu_nginx_install:
+  requires:
+    - ubuntu_nginx_modules_copy
+  build: |
+    ARG UBUNTU_CODENAME
+    ARG NGINX_VERSION
+    ARG NGINX_NJS_VERSION
+    ARG NGINX_PKG_RELEASE
+
+    RUN set -x \
+        && apt-get update \
+        && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
+        && \
+        NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
+        found=''; \
+        for server in \
+            hkp://keyserver.ubuntu.com:80 \
+            pgp.mit.edu \
+        ; do \
+            echo "Fetching GPG key $NGINX_GPGKEY from $server"; \
+            apt-key adv --keyserver "$server" --keyserver-options timeout=10 --recv-keys "$NGINX_GPGKEY" && found=yes && break; \
+        done; \
+        test -z "$found" && echo >&2 "error: failed to fetch GPG key $NGINX_GPGKEY" && exit 1; \
+        apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
+        && dpkgArch="$(dpkg --print-architecture)" \
+        && nginxPackages=" \
+            nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+        " \
+        && case "$dpkgArch" in \
+            amd64|arm64) \
+        # arches officialy built by upstream
+                echo "deb https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
+                && apt-get update \
+                ;; \
+            *) \
+        # we're on an architecture upstream doesn't officially build for
+        # let's build binaries from the published source packages
+                echo "deb-src https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
+                \
+        # new directory for storing sources and .deb files
+                && tempDir="$(mktemp -d)" \
+                && chmod 777 "$tempDir" \
+        # (777 to ensure APT's "_apt" user can access it too)
+                \
+        # save list of currently-installed packages so build dependencies can be cleanly removed later
+                && savedAptMark="$(apt-mark showmanual)" \
+                \
+        # build .deb files from upstream's source packages (which are verified by apt-get)
+                && apt-get update \
+                && apt-get build-dep -y $nginxPackages \
+                && ( \
+                    cd "$tempDir" \
+                    && DEB_BUILD_OPTIONS="nocheck parallel=$(nproc)" \
+                        apt-get source --compile $nginxPackages \
+                ) \
+        # we don't remove APT lists here because they get re-downloaded and removed later
+                \
+        # reset apt-mark's "manual" list so that "purge --auto-remove" will remove all build dependencies
+        # (which is done after we install the built packages so we don't have to redownload any overlapping dependencies)
+                && apt-mark showmanual | xargs apt-mark auto > /dev/null \
+                && { [ -z "$savedAptMark" ] || apt-mark manual $savedAptMark; } \
+                \
+        # create a temporary local APT repo to install from (so that dependency resolution can be handled by APT, as it should be)
+                && ls -lAFh "$tempDir" \
+                && ( cd "$tempDir" && dpkg-scanpackages . > Packages ) \
+                && grep '^Package: ' "$tempDir/Packages" \
+                && echo "deb [ trusted=yes ] file://$tempDir ./" > /etc/apt/sources.list.d/temp.list \
+        # work around the following APT issue by using "Acquire::GzipIndexes=false" (overriding "/etc/apt/apt.conf.d/docker-gzip-indexes")
+        #   Could not open file /var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages - open (13: Permission denied)
+        #   ...
+        #   E: Failed to fetch store:/var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages  Could not open file /var/lib/apt/lists/partial/_tmp_tmp.ODWljpQfkE_._Packages - open (13: Permission denied)
+                && apt-get -o Acquire::GzipIndexes=false update \
+                ;; \
+        esac \
+        \
+        && apt-get install --no-install-recommends --no-install-suggests -y \
+                            $nginxPackages \
+                            gettext-base \
+                            curl \
+        && apt-get remove --purge --auto-remove -y && rm -rf /var/lib/apt/lists/* /etc/apt/sources.list.d/nginx.list \
+        \
+        # if we have leftovers from building, let's purge them (including extra, unnecessary build deps)
+        && if [ -n "$tempDir" ]; then \
+            apt-get purge -y --auto-remove \
+            && rm -rf "$tempDir" /etc/apt/sources.list.d/temp.list; \
+        fi
+
+ubuntu_pip_build:
+  requires:
+    - base_meta
+    - ubuntu_python_install
+  build_directory: ./
+  FROM: ubuntu:{{ UBUNTU_VERSION }}
+  build: |
+
+    # Install dependencies
+    RUN apt-get update \
+      && apt-get install -y --no-install-recommends \
+        g++ \
+      && apt-get clean \
+      && rm -rf /var/lib/apt/lists/*
+
+    # Add requirements
+    ADD image-requirements.txt /image-requirements.txt
+    RUN pip install -r /image-requirements.txt
+
+ubuntu_build:
+  copy_from:
+    ubuntu_pip_build:
+      /root/.cache: /root/
+  build: |
+    RUN apt-get update \
+        && apt-get install -y --no-install-recommends \
+            jq \
+            curl \
+            openssl \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/*
+
+    # Set nginx user
+    ENV DBMI_NGINX_USER www-data

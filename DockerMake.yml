@@ -1,0 +1,246 @@
+# Title: dbmisvc-docker
+# Description: Builder for base image to be used for DBMI services
+# Author: HMS DBMI Tech Core
+# Version: 0.1.1
+# Date: 2021-07-02
+
+_SOURCES_:
+  - DockerMake.base.yml
+  - DockerMake.alpine.yml
+  - DockerMake.debian.yml
+  - DockerMake.ubuntu.yml
+
+_GLOBALS_: &globals
+  NGINX_VERSION: "1.21.6"
+  NGINX_NJS_VERSION: "0.7.2"
+  NGINX_PKG_RELEASE: "1"
+
+alpine:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine{{ ALPINE_VERSION|default('3.15') }}"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.15') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_build
+    - base_base_build
+
+alpine3.15:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.15"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.15
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_build
+    - base_base_build
+
+alpine3.14:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.14"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.14
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_build
+    - base_base_build
+
+alpine3.13:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.13"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.13
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_build
+    - base_base_build
+
+alpine3.12:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.12"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.12
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_build
+    - base_base_build
+
+alpine3.11:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-alpine3.11"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.11
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_build
+    - base_base_build
+
+debian:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-{{ DEBIAN_CODENAME|default('bullseye') }}"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bullseye') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_build
+    - base_base_build
+
+debian11:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-bullseye"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: bullseye
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_build
+    - base_base_build
+
+debian10:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-buster"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: buster
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_build
+    - base_base_build
+
+debian9:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-stretch"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: stretch
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_build
+    - base_base_build
+
+debian-slim:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-{{ DEBIAN_CODENAME|default('bullseye') }}"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bullseye') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_prebuilt_install
+    - debian_build
+    - base_base_build
+
+debian11-slim:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-bullseye"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: bullseye
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_prebuilt_install
+    - debian_build
+    - base_base_build
+
+debian10-slim:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-buster"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: buster
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_build
+    - base_base_build
+
+debian9-slim:
+  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-stretch"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: stretch
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_build
+    - base_base_build
+
+ubuntu:
+  FROM: "ubuntu:{{ UBUNTU_VERSION|default('20.04') }}"
+  build_args:
+    << : *globals
+    UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('20.04') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+    UBUNTU_CODENAME: "{{ UBUNTU_CODENAME|default('focal') }}"
+  requires:
+    - base_meta
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - ubuntu_build
+    - base_base_build
+
+ubuntu20.04:
+  FROM: "ubuntu:20.04"
+  build_args:
+    << : *globals
+    UBUNTU_VERSION: 20.04
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+    UBUNTU_CODENAME: "focal"
+  requires:
+    - base_meta
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - ubuntu_build
+    - base_base_build
+
+ubuntu18.04:
+  FROM: "ubuntu:18.04"
+  build_args:
+    << : *globals
+    UBUNTU_VERSION: 18.04
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+    UBUNTU_CODENAME: "bionic"
+  requires:
+    - base_meta
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - ubuntu_build
+    - base_base_build
+
+_ALL_:
+ - alpine
+ - alpine3.15
+ - alpine3.14
+ - alpine3.13
+ - alpine3.12
+ - debian-slim
+ - debian11-slim
+ - debian10-slim
+ - debian9-slim
+ - debian8-slim
+ - debian
+ - debian11
+ - debian10
+ - debian9
+ - debian8
+ - ubuntu
+ - ubuntu20.04
+ - ubuntu18.04

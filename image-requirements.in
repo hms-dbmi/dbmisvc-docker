@@ -1,0 +1,4 @@
+awscli<2.0
+shinto-cli<1.0
+dumb-init<2.0
+gunicorn<21.0

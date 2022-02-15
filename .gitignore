@@ -3,6 +3,9 @@ app
 Dockerfile.*
 docker-compose.yml
 
+# Ignore NPM modules
+node_modules
+
 # Created by https://www.gitignore.io/api/osx,linux,django,python,windows,pycharm+all,visualstudiocode
 
 ### Django ###
