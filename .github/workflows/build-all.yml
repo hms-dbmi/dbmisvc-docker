@@ -37,6 +37,7 @@ jobs:
         VERSIONS=$(python build.py versions python)
 
         # Echo to output
+        echo "Python versions: '${VERSIONS}'"
         echo "::set-output name=python-versions::${VERSIONS}"
 
     - name: Generate Debian versions matrix
@@ -46,6 +47,7 @@ jobs:
         VERSIONS=$(python build.py versions debian)
 
         # Echo to output
+        echo "Debian versions: '${VERSIONS}'"
         echo "::set-output name=debian-versions::${VERSIONS}"
 
     - name: Generate Alpine versions matrix
@@ -55,6 +57,7 @@ jobs:
         VERSIONS=$(python build.py versions alpine)
 
         # Echo to output
+        echo "Alpine versions: '${VERSIONS}'"
         echo "::set-output name=alpine-versions::${VERSIONS}"
 
     - name: Generate Ubuntu versions matrix
@@ -64,7 +67,10 @@ jobs:
         VERSIONS=$(python build.py versions ubuntu)
 
         # Echo to output
+        echo "Ubuntu versions: '${VERSIONS}'"
         echo "::set-output name=ubuntu-versions::${VERSIONS}"
+
+    - uses: hmarr/debug-action@v2
 
   version:
     runs-on: ubuntu-latest
@@ -93,6 +99,12 @@ jobs:
           @semantic-release/exec
           @semantic-release/changelog
           @semantic-release/git
+
+    - name: Echo versioning
+      run: |
+        # Generate versions
+        echo "New version released: '${{ steps.semantic.outputs.new_release_published }}'"
+        echo "New version: '${{ steps.semantic.outputs.new_release_version }}'"
 
   build-debian:
     needs:

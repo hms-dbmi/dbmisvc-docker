@@ -29,6 +29,7 @@ inputs:
 runs:
   using: "composite"
   steps:
+  - uses: hmarr/debug-action@v2
 
   - name: Checkout source
     uses: actions/checkout@v2
@@ -56,8 +57,15 @@ runs:
     env:
       PUSH: ${{ fromJson( '["", "--push"]' )[inputs.push == 'true'] }}
     run: |
+      # Run the build
+      echo "Target: '${{inputs.target}}'"
+      echo "OS version: '${{inputs.os-version}}'"
+      echo "Python version: '${{inputs.python-version}}'"
+      echo "Version: '${{inputs.version}}'"
+      echo "Repo: '${{inputs.repo}}'"
+      echo "Push: '${PUSH}'"
       python build.py ${{ inputs.target }} \
         --version ${{ inputs.version }} \
         --repo ${{ inputs.repo }} \
-        $PUSH \
+        ${PUSH} \
         -- ${{ inputs.os-version }} ${{ inputs.python-version }}
