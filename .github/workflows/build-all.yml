@@ -6,15 +6,22 @@ on:
   pull_request:
     branches: [ master ]
   workflow_dispatch:
-
+    inputs:
+      push:
+        type: choice
+        description: Whether to push the image to Docker Hub or not
+        required: true
+        options:
+        - "true"
+        - "false"
 jobs:
   matrices:
     runs-on: ubuntu-latest
     outputs:
-      python-versions: ${{ steps.python-versions.outputs.python-versions }}
-      debian-versions: ${{ steps.debian-versions.outputs.debian-versions }}
-      alpine-versions: ${{ steps.alpine-versions.outputs.alpine-versions }}
-      ubuntu-versions: ${{ steps.ubuntu-versions.outputs.ubuntu-versions }}
+      python-versions: ${{ steps.generate-python-versions-matrix.outputs.python-versions }}
+      debian-versions: ${{ steps.generate-debian-versions-matrix.outputs.debian-versions }}
+      alpine-versions: ${{ steps.generate-alpine-versions-matrix.outputs.alpine-versions }}
+      ubuntu-versions: ${{ steps.generate-ubuntu-versions-matrix.outputs.ubuntu-versions }}
     steps:
 
     - name: Checkout source
@@ -30,11 +37,15 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
+    - name: Install jq
+      run: |
+        sudo apt-get update && sudo apt-get -y install jq
+
     - name: Generate Python versions matrix
       id: generate-python-versions-matrix
       run: |
         # Generate versions
-        VERSIONS=$(python build.py versions python)
+        VERSIONS=$(python build.py versions python | jq -R .)
 
         # Echo to output
         echo "Python versions: '${VERSIONS}'"
@@ -44,7 +55,7 @@ jobs:
       id: generate-debian-versions-matrix
       run: |
         # Generate versions
-        VERSIONS=$(python build.py versions debian)
+        VERSIONS=$(python build.py versions debian | jq -R .)
 
         # Echo to output
         echo "Debian versions: '${VERSIONS}'"
@@ -54,7 +65,7 @@ jobs:
       id: generate-alpine-versions-matrix
       run: |
         # Generate versions
-        VERSIONS=$(python build.py versions alpine)
+        VERSIONS=$(python build.py versions alpine | jq -R .)
 
         # Echo to output
         echo "Alpine versions: '${VERSIONS}'"
@@ -64,7 +75,7 @@ jobs:
       id: generate-ubuntu-versions-matrix
       run: |
         # Generate versions
-        VERSIONS=$(python build.py versions ubuntu)
+        VERSIONS=$(python build.py versions ubuntu | jq -R .)
 
         # Echo to output
         echo "Ubuntu versions: '${VERSIONS}'"
