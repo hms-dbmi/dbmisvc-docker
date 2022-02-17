@@ -20,6 +20,7 @@ Options:
     -c <commit>, --commit <commit>                  The Git commit hash to use for image metadata.
     --print                                         Print the Dockerfiles to file instead of building.
     --dryrun                                        Print Dockerfiles to file instead of building images.
+    --fail                                          If the build is invalid or cannot be built for any reason, fail the entire rune. [default: True]
     -h, --help                                      Show this.
     -q, --quiet                                     Print less text.
     --verbose                                       Print more text.
@@ -291,6 +292,8 @@ class Target(object):
                         f"[red]Error[/red]: Build target "
                         f"'{self.build_target(os_version)}' is an invalid "
                         f"target. Check DockerMake.yml for valid targets.")
+                    if args["--fail"]:
+                        exit(1)
                     continue
 
                 for python_version in python_versions:
@@ -306,6 +309,9 @@ class Target(object):
                             f"'{self.get_base_image_name(os_version, python_version)}' no longer exists, "
                             f"cannot build 'hmsdbmitc/dbmisvc:{self.tag(os_version, python_version, version)}'"
                         )
+                        # If not directed to do otherwise, fail this build
+                        if args["--fail"]:
+                            exit(1)
                         continue
 
                     # Build the command
