@@ -1,6 +1,8 @@
 name: Test Build Targets
 
 on:
+  pull_request:
+    branches: [ master ]
   workflow_dispatch:
     inputs:
       targets:
@@ -10,7 +12,7 @@ on:
         options:
           - "all"
           - "debian"
-          - "debian Slim"
+          - "debian slim"
           - "alpine"
           - "ubuntu"
         description: The target(s) to test build
@@ -19,10 +21,10 @@ jobs:
   matrices:
     runs-on: ubuntu-latest
     outputs:
-      python-versions: ${{ steps.generate-python-versions-matrix.outputs.python-versions }}
-      debian-versions: ${{ steps.generate-debian-versions-matrix.outputs.debian-versions }}
-      alpine-versions: ${{ steps.generate-alpine-versions-matrix.outputs.alpine-versions }}
-      ubuntu-versions: ${{ steps.generate-ubuntu-versions-matrix.outputs.ubuntu-versions }}
+      python-versions: ${{ steps.generate-versions-matrices.outputs.python-versions }}
+      debian-versions: ${{ steps.generate-versions-matrices.outputs.debian-versions }}
+      alpine-versions: ${{ steps.generate-versions-matrices.outputs.alpine-versions }}
+      ubuntu-versions: ${{ steps.generate-versions-matrices.outputs.ubuntu-versions }}
     steps:
 
     - name: Checkout source
@@ -38,62 +40,48 @@ jobs:
         python -m pip install --upgrade pip
         pip install -r requirements.txt
 
-    - name: Install jq
-      run: |
-        sudo apt-get update && sudo apt-get -y install jq
-
-    - name: Generate Python versions matrix
-      id: generate-python-versions-matrix
+    - name: Generate versions matrices
+      id: generate-versions-matrices
       run: |
         # Generate versions
-        VERSIONS=$(python build.py versions python | jq -R .)
+        echo "Python versions: $(python build.py versions python)"
+        echo "::set-output name=python-versions::$(python build.py versions python)"
+        echo "Debian versions: $(python build.py versions debian)"
+        echo "::set-output name=debian-versions::$(python build.py versions debian)"
+        echo "Alpine versions: $(python build.py versions alpine)"
+        echo "::set-output name=alpine-versions::$(python build.py versions alpine)"
+        echo "Ubuntu versions: $(python build.py versions ubuntu)"
+        echo "::set-output name=ubuntu-versions::$(python build.py versions ubuntu)"
 
-        # Echo to output
-        echo "Python versions: '${VERSIONS}'"
-        echo "::set-output name=python-versions::${VERSIONS}"
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      dbmisvc-docker-version: ${{ steps.get-version-tag.outputs.tag }}
+    steps:
 
-    - name: Generate Debian versions matrix
-      id: generate-debian-versions-matrix
-      run: |
-        # Generate versions
-        VERSIONS=$(python build.py versions debian | jq -R .)
+    - name: Checkout source
+      uses: actions/checkout@v2
+      with:
+          fetch-depth: 0
 
-        # Echo to output
-        echo "Debian versions: '${VERSIONS}'"
-        echo "::set-output name=debian-versions::${VERSIONS}"
-
-    - name: Generate Alpine versions matrix
-      id: generate-alpine-versions-matrix
-      run: |
-        # Generate versions
-        VERSIONS=$(python build.py versions alpine | jq -R .)
-
-        # Echo to output
-        echo "Alpine versions: '${VERSIONS}'"
-        echo "::set-output name=alpine-versions::${VERSIONS}"
-
-    - name: Generate Ubuntu versions matrix
-      id: generate-ubuntu-versions-matrix
-      run: |
-        # Generate versions
-        VERSIONS=$(python build.py versions ubuntu | jq -R .)
-
-        # Echo to output
-        echo "Ubuntu versions: '${VERSIONS}'"
-        echo "::set-output name=ubuntu-versions::${VERSIONS}"
-
-    - uses: hmarr/debug-action@v2
+    - name: Get Latest Tag
+      id: get-version-tag
+      uses: WyriHaximus/github-action-get-previous-tag@v1
 
   build-debian:
-    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'debian'
+    if: github.event_name == 'pull_request' || github.event.inputs.targets == 'all' || github.event.inputs.targets == 'debian'
     needs:
       - matrices
+      - version
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
     steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
 
     - id: build-debian-targets
       name: Build Debian targets
@@ -103,20 +91,24 @@ jobs:
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
-        version: "${{ needs.version.release_version }}"
+        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
   build-debian-slim:
-    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'debian-slim'
+    if: github.event_name == 'pull_request' || github.event.inputs.targets == 'all' || github.event.inputs.targets == 'debian-slim'
     needs:
       - matrices
+      - version
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
     steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
 
     - id: build-debian-slim-targets
       name: Build Debian Slim targets
@@ -126,20 +118,24 @@ jobs:
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
-        version: "${{ needs.version.release_version }}"
+        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
   build-alpine:
-    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'alpine'
+    if: github.event_name == 'pull_request' || github.event.inputs.targets == 'all' || github.event.inputs.targets == 'alpine'
     needs:
       - matrices
+      - version
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.alpine-versions) }}
     steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
 
     - id: build-alpine-targets
       name: Build Alpine targets
@@ -149,20 +145,24 @@ jobs:
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
-        version: "${{ needs.version.release_version }}"
+        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
   build-ubuntu:
-    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'ubuntu'
+    if: github.event_name == 'pull_request' || github.event.inputs.targets == 'all' || github.event.inputs.targets == 'ubuntu'
     needs:
       - matrices
+      - version
     runs-on: ubuntu-latest
     strategy:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.ubuntu-versions) }}
     steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
 
     - id: build-ubuntu-targets
       name: Build Ubuntu targets
@@ -172,6 +172,6 @@ jobs:
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
-        version: "${{ needs.version.release_version }}"
+        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
