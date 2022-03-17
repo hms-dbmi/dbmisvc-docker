@@ -20,7 +20,7 @@ Options:
     -c <commit>, --commit <commit>                  The Git commit hash to use for image metadata.
     --print                                         Print the Dockerfiles to file instead of building.
     --dryrun                                        Print Dockerfiles to file instead of building images.
-    --fail                                          If the build is invalid or cannot be built for any reason, fail the entire rune. [default: True]
+    --continue-on-error                             If a build is invalid or cannot be built, continue on to other builds.
     -h, --help                                      Show this.
     -q, --quiet                                     Print less text.
     --verbose                                       Print more text.
@@ -238,7 +238,6 @@ class Target(object):
                 version=version,
                 python_version=python_version,
             )
-            console.print(f"Checking base image: '{base_image}'")
 
             # Get it and check it
             client = docker.from_env()
@@ -292,7 +291,7 @@ class Target(object):
                         f"[red]Error[/red]: Build target "
                         f"'{self.build_target(os_version)}' is an invalid "
                         f"target. Check DockerMake.yml for valid targets.")
-                    if args["--fail"]:
+                    if not args["--continue-on-error"]:
                         exit(1)
                     continue
 
@@ -303,6 +302,7 @@ class Target(object):
                         repo = 'index.docker.io/' + repo
 
                     # Check base image
+                    console.print(f"Checking base image: '{self.get_base_image_name(os_version, python_version)}'")
                     if not self.can_build(os_version, python_version):
                         console.print(
                             f"[blue]Info[/blue]: Docker image "
@@ -310,9 +310,12 @@ class Target(object):
                             f"cannot build 'hmsdbmitc/dbmisvc:{self.tag(os_version, python_version, version)}'"
                         )
                         # If not directed to do otherwise, fail this build
-                        if args["--fail"]:
+                        if not args["--continue-on-error"]:
                             exit(1)
                         continue
+
+                    # Base image is good
+                    console.print(f"Base image is good :thumbs_up:")
 
                     # Build the command
                     command = [
@@ -340,20 +343,30 @@ class Target(object):
                     if print:
                         command.append("--print_dockerfiles")
 
+                    # Set a placeholder for the process object
+                    process = None
                     try:
                         # Check dry run
                         if dry_run:
                             console.print(f"[blue]DRY RUN[/blue]: {command}")
 
                         else:
-                            # Run it
-                            subprocess.run(command, stdout=subprocess.PIPE)
+                            console.print("[green]Building target image...")
+                                
+                            # Run the command
+                            process = subprocess.run(command)
+                            process.check_returncode()
+
+                            # Base image is good
+                            console.print(f"[bold green]Image built successfully :thumbs_up:")
 
                     except Exception as e:
-                        logger.exception(f"Error: {e}", exc_info=True)
+
+                        # Base image is good
+                        console.print(f"[red bold]Error: [/red bold] Image failed to build :cross_mark:")
 
                         # Fail out entirely if necessary
-                        if args["--fail"]:
+                        if not args["--continue-on-error"]:
                             exit(1)
 
         except Exception as e:

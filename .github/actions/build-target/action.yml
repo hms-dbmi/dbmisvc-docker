@@ -81,5 +81,4 @@ runs:
         --repo ${{ inputs.repo }} \
         ${PUSH} \
         ${{ inputs.options }} \
-        --fail \
         -- ${{ inputs.os-version }} ${{ inputs.python-version }}
