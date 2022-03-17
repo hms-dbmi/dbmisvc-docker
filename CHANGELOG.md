@@ -1,3 +1,11 @@
+## [0.3.2](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.1...v0.3.2) (2022-03-17)
+
+
+### Bug Fixes
+
+* **build:** DBMISVC-113 - Some Ubuntu codenames are without spaces so regex had to be updated accordingly ([b4e0116](https://github.com/hms-dbmi/dbmisvc-docker/commit/b4e0116133f6135948a7f3a5b59017c82a6d028a))
+* **targets:** DBMISVC-113 - Added older but still LTS Ubuntu targets ([6a97407](https://github.com/hms-dbmi/dbmisvc-docker/commit/6a97407af09366908f458fa3ce7c6838d3a0c4ec))
+
 ## [0.3.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.0...v0.3.1) (2022-03-17)
 
 
