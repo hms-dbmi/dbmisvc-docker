@@ -1,3 +1,10 @@
+## [0.3.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.0...v0.3.1) (2022-03-17)
+
+
+### Bug Fixes
+
+* **nginx:** DBMISVC-111/112 - Fixes file proxy DNS resolution in private networks; fixes Nginx restart bug; refactored some Nginx configuration steps ([ddab01c](https://github.com/hms-dbmi/dbmisvc-docker/commit/ddab01c772582c51f5609ed0a927a229971676e4))
+
 # 0.3.0 (2022-02-15)
 
 
