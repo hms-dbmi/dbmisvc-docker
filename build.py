@@ -782,7 +782,7 @@ class Ubuntu(Target):
         }
 
     @classmethod
-    def get_supported_versions(cls, lts=False):
+    def get_supported_versions(cls, lts=True):
         """
         Returns a list of numeric versions that are currently supported for
         the current target/OS. Uses https://endoflife.date as a source for
