@@ -318,7 +318,7 @@ class Target(object):
                     command = [
                         "docker-make", "-f", "DockerMake.yml",
                         self.build_target(os_version),
-                        "-t",  f"python{python_version}-{os_version}",
+                        "-t",  f"python{python_version}-{version}",
                         "-u", repo,
                         "--build-arg", f"PYTHON_VERSION={python_version}",
                         "--build-arg", f"DATE={datetime.utcnow().strftime('%Y-%m-%dT%H:%M:%SZ')}",

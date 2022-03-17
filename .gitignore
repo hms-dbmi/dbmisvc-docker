@@ -2,6 +2,7 @@
 app
 Dockerfile.*
 docker-compose.yml
+.backups
 
 # Ignore NPM modules
 node_modules
