@@ -75,9 +75,17 @@ jobs:
       - version
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
+        exclude:
+          - os-version: "9"
+            python-version: "3.10"
+          - os-version: "9"
+            python-version: "3.9"
+          - os-version: "9"
+            python-version: "3.8"
     steps:
 
     - name: Checkout source
@@ -102,9 +110,17 @@ jobs:
       - version
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
+        exclude:
+          - os-version: "9"
+            python-version: "3.10"
+          - os-version: "9"
+            python-version: "3.9"
+          - os-version: "9"
+            python-version: "3.8"
     steps:
 
     - name: Checkout source
@@ -129,9 +145,13 @@ jobs:
       - version
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.alpine-versions) }}
+        exclude:
+          - os-version: "3.12"
+            python-version: "3.10"
     steps:
 
     - name: Checkout source
@@ -156,6 +176,7 @@ jobs:
       - version
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.ubuntu-versions) }}
