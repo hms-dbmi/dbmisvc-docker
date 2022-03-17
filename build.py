@@ -752,7 +752,7 @@ class Ubuntu(Target):
             response = requests.get("https://endoflife.date/api/ubuntu.json")
 
             # Set the pattern
-            pattern = rf"{version} '([A-Za-z-_]+) [A-Za-z-_]+'"
+            pattern = rf"{version} '([A-Z][a-z-_]+)\s?[A-Z][a-z-_]+'"
 
             # Parse versions
             release = next(v for v in response.json() if re.fullmatch(pattern, v["cycle"]))
