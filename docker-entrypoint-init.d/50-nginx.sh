@@ -1,4 +1,5 @@
-#!/bin/bash -e
+#!/usr/bin/env bash
+set -e
 
 # Check for AWS EC2 internal endpoint
 if [[ -n $DBMI_LB ]]; then
@@ -7,12 +8,22 @@ if [[ -n $DBMI_LB ]]; then
     AWS_IMDS_ENDPOINT="http://169.254.169.254"
 
     # Get the EC2 host IP
-    export DBMI_EC2_HOST=$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/local-ipv4)
-    export ALLOWED_HOSTS=$ALLOWED_HOSTS,$DBMI_EC2_HOST
+    DBMI_EC2_HOST="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/local-ipv4)"
+    export DBMI_EC2_HOST
+    export ALLOWED_HOSTS="$ALLOWED_HOSTS,$DBMI_EC2_HOST"
 
     # Set the trusted addresses for load balancers to the current subnet
-    DBMI_EC2_MAC=$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/mac)
-    export DBMI_LB_SUBNET=$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/$DBMI_EC2_MAC/vpc-ipv4-cidr-blocks)
+    DBMI_EC2_MAC="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/mac)"
+    DBMI_LB_SUBNET="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-blocks)"
+    export DBMI_LB_SUBNET
+
+    # Get the address of the VPC's primary DNS resolver
+    DBMI_VPC_CIDR_BLOCK="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-block)"
+
+    # Primary DNS resolver for VPC is first IP in CIDR block plus 2 (e.g. 10.0.0.0/16 -> 10.0.0.2)
+    # This simply uses prips to print all IP addresses in block and extracts the third one.
+    DBMI_FILE_PROXY_DNS=$(prips "${DBMI_VPC_CIDR_BLOCK}" | sed -n 3p)
+    export DBMI_FILE_PROXY_DNS
 fi
 
 # Check for self signed
@@ -39,7 +50,7 @@ if [[ -n "$DBMI_CREATE_SSL" ]]; then
 
     # Generate our Private Key, CSR and Certificate
     openssl genrsa -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" 2048
-    openssl req -new -key "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.csr" -passin pass:${passphrase} -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
+    openssl req -new -key "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.csr" -passin pass:"${passphrase}" -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
     openssl x509 -req -days 365 -in "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.csr" -signkey "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.crt"
 
 fi
@@ -62,7 +73,7 @@ if [[ -n "$DBMI_SSL" ]]; then
     organizationalunit=Default
     email=nothing@default.com
     openssl genrsa -out "${DBMI_SSL_PATH}/default.key" 2048
-    openssl req -new -key "${DBMI_SSL_PATH}/default.key" -out "${DBMI_SSL_PATH}/default.csr" -passin pass:${passphrase} -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
+    openssl req -new -key "${DBMI_SSL_PATH}/default.key" -out "${DBMI_SSL_PATH}/default.csr" -passin pass:"${passphrase}" -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
     openssl x509 -req -days 365 -in "${DBMI_SSL_PATH}/default.csr" -signkey "${DBMI_SSL_PATH}/default.key" -out "${DBMI_SSL_PATH}/default.crt"
 
 fi
