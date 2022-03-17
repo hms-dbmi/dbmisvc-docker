@@ -756,7 +756,7 @@ class Ubuntu(Target):
             response = requests.get("https://endoflife.date/api/ubuntu.json")
 
             # Set the pattern
-            pattern = rf"{version} '([A-Za-z-_]+) [A-Za-z-_]+'"
+            pattern = rf"{version} '([A-Z][a-z-_]+)\s?[A-Z][a-z-_]+'"
 
             # Parse versions
             release = next(v for v in response.json() if re.fullmatch(pattern, v["cycle"]))
@@ -786,7 +786,7 @@ class Ubuntu(Target):
         }
 
     @classmethod
-    def get_supported_versions(cls, lts=False):
+    def get_supported_versions(cls, lts=True):
         """
         Returns a list of numeric versions that are currently supported for
         the current target/OS. Uses https://endoflife.date as a source for
