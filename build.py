@@ -352,6 +352,10 @@ class Target(object):
                     except Exception as e:
                         logger.exception(f"Error: {e}", exc_info=True)
 
+                        # Fail out entirely if necessary
+                        if args["--fail"]:
+                            exit(1)
+
         except Exception as e:
             logger.exception(f"Error: {e}", exc_info=True)
 
