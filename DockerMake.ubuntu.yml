@@ -76,6 +76,7 @@ ubuntu_python_install:
         libffi-dev \
         libgdbm-dev \
         liblzma-dev \
+      && apt-get update && apt-get install -y --no-install-recommends \
         libncursesw5-dev \
         libreadline-dev \
         libsqlite3-dev \
@@ -86,6 +87,7 @@ ubuntu_python_install:
         wget \
         xz-utils \
         zlib1g-dev \
+        gnupg-curl \
     # as of Stretch, "gpg" is no longer included by default
         $(command -v gpg > /dev/null || echo 'gnupg dirmngr') \
       \
