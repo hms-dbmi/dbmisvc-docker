@@ -242,33 +242,6 @@ ubuntu18.04:
     - ubuntu_build
     - base_base_build
 
-ubuntu16.04:
-  FROM: "ubuntu:16.04"
-  build_args:
-    << : *globals
-    UBUNTU_VERSION: 16.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    UBUNTU_CODENAME: "xenial"
-  requires:
-    - base_meta
-    - ubuntu_python_install
-    - ubuntu_nginx_install
-    - ubuntu_build
-    - base_base_build
-
-ubuntu14.04:
-  FROM: "ubuntu:14.04"
-  build_args:
-    << : *globals
-    UBUNTU_VERSION: 14.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-    UBUNTU_CODENAME: "trusty"
-  requires:
-    - base_meta
-    - ubuntu_python_install
-    - ubuntu_nginx_install
-    - ubuntu_build
-    - base_base_build
 _ALL_:
  - alpine
  - alpine3.15
@@ -288,5 +261,3 @@ _ALL_:
  - ubuntu
  - ubuntu20.04
  - ubuntu18.04
- - ubuntu16.04
- - ubuntu14.04
