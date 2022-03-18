@@ -14,30 +14,6 @@ base_meta:
     ARG BUILD_ENV=prod
     ARG APP_ROOT=/app
 
-base_prips_build:
-  build_directory: ./
-  build: |
-
-    # Download prips, build, and install
-    RUN BUILD_PACKAGES="apt-transport-https ca-certificates wget build-essential" \
-        && apt-get update \
-        && apt-get install -y --no-install-recommends $BUILD_PACKAGES \
-        # Download and build prips
-        && PRIPS_DIR="/tmp/prips" \
-        && mkdir "$PRIPS_DIR" \
-        && ( \
-            cd "$PRIPS_DIR" \
-            && wget -c https://devel.ringlet.net/files/sys/prips/prips-1.2.0.tar.gz -O - | tar -xz \
-            && cd prips-1.2.0 \
-            && make \
-            && cp prips /usr/local/bin \
-            && chmod +x /usr/local/bin/prips \
-        ) \
-        # Clean up packages
-        && apt-get remove --purge --auto-remove -y $BUILD_PACKAGES \
-        && rm -rf /var/lib/apt/lists/* \
-        && rm -rf "$PRIPS_DIR"
-
 base_base_build:
   build_directory: ./
   build: |

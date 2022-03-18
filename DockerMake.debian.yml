@@ -102,7 +102,7 @@ debian_nginx_install:
 
     RUN set -x \
         && apt-get update \
-        && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
+        && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 apt-transport-https ca-certificates \
         && \
         NGINX_GPGKEY=573BFD6B3D8FBC641079A6ABABF5BD827BD9BF62; \
         found=''; \
@@ -215,3 +215,31 @@ debian_build:
 
     # Set nginx user
     ENV DBMI_NGINX_USER www-data
+
+debian_prips_build:
+  build_directory: ./
+  build: |
+
+    # Download prips, build, and install
+    RUN BUILD_PACKAGES="build-essential" \
+        && apt-get update \
+        && apt-get install -y --no-install-recommends \
+          apt-transport-https \
+          ca-certificates \
+          wget \
+          $BUILD_PACKAGES \
+        # Download and build prips
+        && PRIPS_DIR="/tmp/prips" \
+        && mkdir "$PRIPS_DIR" \
+        && ( \
+            cd "$PRIPS_DIR" \
+            && wget -c https://devel.ringlet.net/files/sys/prips/prips-1.2.0.tar.gz -O - | tar -xz \
+            && cd prips-1.2.0 \
+            && make \
+            && cp prips /usr/local/bin \
+            && chmod +x /usr/local/bin/prips \
+        ) \
+        # Clean up packages
+        && apt-get remove --purge --auto-remove -y $BUILD_PACKAGES \
+        && rm -rf /var/lib/apt/lists/* \
+        && rm -rf "$PRIPS_DIR"

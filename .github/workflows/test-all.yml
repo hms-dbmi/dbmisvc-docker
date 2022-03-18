@@ -79,13 +79,6 @@ jobs:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
-        exclude:
-          - os-version: "9"
-            python-version: "3.10"
-          - os-version: "9"
-            python-version: "3.9"
-          - os-version: "9"
-            python-version: "3.8"
     steps:
 
     - name: Checkout source
@@ -114,13 +107,6 @@ jobs:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
-        exclude:
-          - os-version: "9"
-            python-version: "3.10"
-          - os-version: "9"
-            python-version: "3.9"
-          - os-version: "9"
-            python-version: "3.8"
     steps:
 
     - name: Checkout source

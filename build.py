@@ -48,6 +48,7 @@ import requests
 from rich.console import Console
 from rich.prompt import Prompt
 from docopt import docopt
+from distutils.version import LooseVersion
 
 # Instantiate output objects
 logger = logging.getLogger(__name__)
@@ -63,6 +64,7 @@ class Target(object):
     codename_pattern = r"^[A-Za-z-_\s]+$"
     targets = None
     suffix = None
+    excluded_versions = []
 
     def __init__(self, identifier):
         #self.identifier = identifier
@@ -90,6 +92,7 @@ class Target(object):
 
             # Parse versions
             versions = [v["cycle"] for v in response.json() if dateparse(v["eol"]) > datetime.now()]
+            versions.sort(key=LooseVersion)
 
             return versions
 
@@ -529,7 +532,13 @@ class Alpine(Target):
             if lts:
                 versions = [v for v in versions if v.get("lts")]
 
-            return [re.fullmatch(pattern, v["cycle"])[1] for v in versions]
+            versions = [re.fullmatch(pattern, v["cycle"])[1] for v in versions]
+
+            # Difference with exclusions
+            versions = list(set(versions) - set(cls.excluded_versions))
+            versions.sort(key=LooseVersion)
+
+            return versions
 
         except requests.HTTPError as e:
             print(f"Error: request for Debian versions failed: {e}")
@@ -541,7 +550,8 @@ class Alpine(Target):
 class Debian(Target):
 
     identifier = "debian"
-    version_pattern = r"(9|[123][0-9]+)"
+    version_pattern = r"([123][0-9]+)"
+    excluded_versions = ["9"]
 
     @classmethod
     def get_version_from_codename(cls, codename, minor_version=False):
@@ -664,7 +674,14 @@ class Debian(Target):
             if lts:
                 versions = [v for v in versions if v.get("lts")]
 
-            return [v["cycle"] for v in versions]
+            # Extract supported versions
+            versions = [v["cycle"] for v in versions]
+
+            # Difference with exclusions
+            versions = list(set(versions) - set(cls.excluded_versions))
+            versions.sort(key=LooseVersion)
+
+            return versions
 
         except requests.HTTPError as e:
             print(f"Error: request for Debian versions failed: {e}")
@@ -706,6 +723,9 @@ class Ubuntu(Target):
 
     identifier = "ubuntu"
     version_pattern = r"^(18|[2-9][0-9])\.(0[1-9]|1[0-2])$"
+
+    # Exclude 14.04 and 16.04 because they are nightmares
+    excluded_versions = ["14.04", "16.04"]
 
     @classmethod
     def get_base_image_name(cls, version, python_version):
@@ -826,7 +846,14 @@ class Ubuntu(Target):
             if lts:
                 versions = [v for v in versions if v.get("lts")]
 
-            return [re.fullmatch(pattern, v["cycle"])[1] for v in versions]
+            # Extract versions
+            versions = [re.fullmatch(pattern, v["cycle"])[1] for v in versions]
+
+            # Difference with exclusions
+            versions = list(set(versions) - set(cls.excluded_versions))
+            versions.sort(key=LooseVersion)
+
+            return versions
 
         except requests.HTTPError as e:
             print(f"Error: request for Ubuntu versions failed: {e}")
