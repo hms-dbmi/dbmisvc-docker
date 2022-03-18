@@ -221,9 +221,13 @@ debian_prips_build:
   build: |
 
     # Download prips, build, and install
-    RUN BUILD_PACKAGES="apt-transport-https ca-certificates wget build-essential" \
+    RUN BUILD_PACKAGES="build-essential" \
         && apt-get update \
-        && apt-get install -y --no-install-recommends $BUILD_PACKAGES \
+        && apt-get install -y --no-install-recommends \
+          apt-transport-https \
+          ca-certificates \
+          wget \
+          $BUILD_PACKAGES \
         # Download and build prips
         && PRIPS_DIR="/tmp/prips" \
         && mkdir "$PRIPS_DIR" \

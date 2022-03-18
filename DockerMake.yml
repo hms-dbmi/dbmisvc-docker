@@ -132,21 +132,6 @@ debian10:
     - debian_build
     - base_base_build
 
-debian9:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-stretch"
-  build_args:
-    NGINX_VERSION: "1.19.6"
-    NGINX_NJS_VERSION: "0.5.0"
-    NGINX_PKG_RELEASE: "1"
-    DEBIAN_CODENAME: stretch
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-  requires:
-    - base_meta
-    - debian_nginx_install
-    - debian_prips_build
-    - debian_build
-    - base_base_build
-
 debian-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-{{ DEBIAN_CODENAME|default('bullseye') }}"
   build_args:
@@ -178,21 +163,6 @@ debian10-slim:
   build_args:
     << : *globals
     DEBIAN_CODENAME: buster
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
-  requires:
-    - base_meta
-    - debian_nginx_install
-    - debian_prips_build
-    - debian_build
-    - base_base_build
-
-debian9-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-stretch"
-  build_args:
-    NGINX_VERSION: "1.19.6"
-    NGINX_NJS_VERSION: "0.5.0"
-    NGINX_PKG_RELEASE: "1"
-    DEBIAN_CODENAME: stretch
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
@@ -255,13 +225,9 @@ _ALL_:
  - debian-slim
  - debian11-slim
  - debian10-slim
- - debian9-slim
- - debian8-slim
  - debian
  - debian11
  - debian10
- - debian9
- - debian8
  - ubuntu
  - ubuntu20.04
  - ubuntu18.04

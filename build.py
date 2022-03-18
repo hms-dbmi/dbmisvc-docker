@@ -550,7 +550,8 @@ class Alpine(Target):
 class Debian(Target):
 
     identifier = "debian"
-    version_pattern = r"(9|[123][0-9]+)"
+    version_pattern = r"([123][0-9]+)"
+    excluded_versions = ["9"]
 
     @classmethod
     def get_version_from_codename(cls, codename, minor_version=False):
