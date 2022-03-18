@@ -92,6 +92,7 @@ class Target(object):
 
             # Parse versions
             versions = [v["cycle"] for v in response.json() if dateparse(v["eol"]) > datetime.now()]
+            versions.sort(key=LooseVersion)
 
             return versions
 
