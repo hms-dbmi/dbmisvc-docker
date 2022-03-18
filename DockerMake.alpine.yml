@@ -232,3 +232,25 @@ alpine_build:
 
     # Set nginx user
     ENV DBMI_NGINX_USER nginx
+
+alpine_prips_build:
+  build_directory: ./
+  build: |
+
+    # Download prips, build, and install
+    RUN BUILD_PACKAGES="wget gcc make libc-dev" \
+        && apk add --no-cache --virtual .prips-deps $BUILD_PACKAGES \
+        # Download and build prips
+        && PRIPS_DIR="/tmp/prips" \
+        && mkdir "$PRIPS_DIR" \
+        && ( \
+            cd "$PRIPS_DIR" \
+            && wget -c https://devel.ringlet.net/files/sys/prips/prips-1.2.0.tar.gz -O - | tar -xz \
+            && cd prips-1.2.0 \
+            && make \
+            && cp prips /usr/local/bin \
+            && chmod +x /usr/local/bin/prips \
+        ) \
+        # Clean up packages
+        && apk del .prips-deps \
+        && rm -rf "$PRIPS_DIR"

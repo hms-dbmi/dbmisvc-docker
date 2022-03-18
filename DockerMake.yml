@@ -24,7 +24,7 @@ alpine:
   requires:
     - base_meta
     - alpine_nginx_install
-    - base_prips_build
+    - alpine_prips_build
     - alpine_build
     - base_base_build
 
@@ -37,7 +37,7 @@ alpine3.15:
   requires:
     - base_meta
     - alpine_nginx_install
-    - base_prips_build
+    - alpine_prips_build
     - alpine_build
     - base_base_build
 
@@ -50,7 +50,7 @@ alpine3.14:
   requires:
     - base_meta
     - alpine_nginx_install
-    - base_prips_build
+    - alpine_prips_build
     - alpine_build
     - base_base_build
 
@@ -63,7 +63,7 @@ alpine3.13:
   requires:
     - base_meta
     - alpine_nginx_install
-    - base_prips_build
+    - alpine_prips_build
     - alpine_build
     - base_base_build
 
@@ -76,7 +76,7 @@ alpine3.12:
   requires:
     - base_meta
     - alpine_nginx_install
-    - base_prips_build
+    - alpine_prips_build
     - alpine_build
     - base_base_build
 
@@ -89,7 +89,7 @@ alpine3.11:
   requires:
     - base_meta
     - alpine_nginx_install
-    - base_prips_build
+    - alpine_prips_build
     - alpine_build
     - base_base_build
 
@@ -102,7 +102,7 @@ debian:
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
@@ -115,7 +115,7 @@ debian11:
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
@@ -128,20 +128,22 @@ debian10:
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
 debian9:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-stretch"
   build_args:
-    << : *globals
+    NGINX_VERSION: "1.19.6"
+    NGINX_NJS_VERSION: "0.5.0"
+    NGINX_PKG_RELEASE: "1"
     DEBIAN_CODENAME: stretch
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
@@ -154,7 +156,7 @@ debian-slim:
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
@@ -167,7 +169,7 @@ debian11-slim:
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
@@ -180,20 +182,22 @@ debian10-slim:
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
 debian9-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.9') }}-slim-stretch"
   build_args:
-    << : *globals
+    NGINX_VERSION: "1.19.6"
+    NGINX_NJS_VERSION: "0.5.0"
+    NGINX_PKG_RELEASE: "1"
     DEBIAN_CODENAME: stretch
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
   requires:
     - base_meta
     - debian_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - debian_build
     - base_base_build
 
@@ -208,7 +212,7 @@ ubuntu:
     - base_meta
     - ubuntu_python_install
     - ubuntu_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - ubuntu_build
     - base_base_build
 
@@ -223,7 +227,7 @@ ubuntu20.04:
     - base_meta
     - ubuntu_python_install
     - ubuntu_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - ubuntu_build
     - base_base_build
 
@@ -238,7 +242,7 @@ ubuntu18.04:
     - base_meta
     - ubuntu_python_install
     - ubuntu_nginx_install
-    - base_prips_build
+    - debian_prips_build
     - ubuntu_build
     - base_base_build
 
