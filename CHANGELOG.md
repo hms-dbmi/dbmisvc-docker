@@ -1,3 +1,10 @@
+## [0.3.3](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.2...v0.3.3) (2022-04-28)
+
+
+### Bug Fixes
+
+* **requirements:** Image requirements update ([a231304](https://github.com/hms-dbmi/dbmisvc-docker/commit/a231304d3c463f1ff7d71b6deb294022588cb207))
+
 ## [0.3.2](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.1...v0.3.2) (2022-03-17)
 
 
