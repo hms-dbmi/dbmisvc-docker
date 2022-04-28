@@ -355,7 +355,7 @@ class Target(object):
 
                         else:
                             console.print("[green]Building target image...")
-                                
+
                             # Run the command
                             process = subprocess.run(command)
                             process.check_returncode()
@@ -543,6 +543,9 @@ class Alpine(Target):
         except requests.HTTPError as e:
             print(f"Error: request for Debian versions failed: {e}")
 
+        except KeyError as e:
+            raise ValueError(f"Error parsing response: {e}")
+
         except Exception as e:
             raise ValueError(f"Failed to get current Debian versions")
 
@@ -572,12 +575,15 @@ class Debian(Target):
             response = requests.get("https://endoflife.date/api/debian.json")
 
             # Parse versions
-            release = next(v for v in response.json() if v["cycleShortHand"].lower() == codename.lower())
+            release = next(v for v in response.json() if v["codename"].lower() == codename.lower())
 
             return release["latest"] if minor_version else release["cycle"]
 
         except requests.HTTPError as e:
             print(f"Error: request for Debian versions failed: {e}")
+
+        except KeyError as e:
+            raise ValueError(f"Error parsing response: {e}")
 
         except Exception as e:
             raise ValueError(f"Codename '{codename}' is not a valid Debian version")
@@ -601,10 +607,13 @@ class Debian(Target):
             # Only lookup version on major version number (or cycle)
             release = next(v for v in response.json() if v["cycle"] == next(iter(version.split("."))))
 
-            return release["cycleShortHand"].lower()
+            return release["codename"].lower()
 
         except requests.HTTPError as e:
             print(f"Error: request for Debian versions failed: {e}")
+
+        except KeyError as e:
+            raise ValueError(f"Error parsing response: {e}")
 
         except Exception as e:
             raise ValueError(f"Version '{version}' is not a valid Debian version")
@@ -685,6 +694,9 @@ class Debian(Target):
 
         except requests.HTTPError as e:
             print(f"Error: request for Debian versions failed: {e}")
+
+        except KeyError as e:
+            raise ValueError(f"Error parsing response: {e}")
 
         except Exception as e:
             raise ValueError(f"Failed to get current Debian versions")
@@ -769,6 +781,9 @@ class Ubuntu(Target):
         except requests.HTTPError as e:
             print(f"Error: request for Ubuntu versions failed: {e}")
 
+        except KeyError as e:
+            raise ValueError(f"Error parsing response: {e}")
+
         except Exception as e:
             raise ValueError(f"Codename '{codename}' is not a valid Ubuntu version")
 
@@ -798,6 +813,9 @@ class Ubuntu(Target):
 
         except requests.HTTPError as e:
             print(f"Error: request for Ubuntu versions failed: {e}")
+
+        except KeyError as e:
+            raise ValueError(f"Error parsing response: {e}")
 
         except Exception as e:
             raise ValueError(f"Version '{version}' is not a valid Ubuntu version")
@@ -857,6 +875,9 @@ class Ubuntu(Target):
 
         except requests.HTTPError as e:
             print(f"Error: request for Ubuntu versions failed: {e}")
+
+        except KeyError as e:
+            raise ValueError(f"Error parsing response: {e}")
 
         except Exception as e:
             raise ValueError(f"Failed to get current Ubuntu versions")
