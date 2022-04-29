@@ -13,6 +13,9 @@ on:
         options:
         - "true"
         - "false"
+  schedule:
+    - cron:  '0 8 * * 1'
+
 jobs:
   matrices:
     runs-on: ubuntu-latest
