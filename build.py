@@ -520,7 +520,7 @@ class Alpine(Target):
             response = requests.get("https://endoflife.date/api/alpine.json")
 
             # Set the pattern
-            pattern = rf"v([0-9]+\.[0-9]+)"
+            pattern = rf"([0-9]+\.[0-9]+)"
 
             # Parse versions
             versions = [
@@ -541,13 +541,13 @@ class Alpine(Target):
             return versions
 
         except requests.HTTPError as e:
-            print(f"Error: request for Debian versions failed: {e}")
+            print(f"Error: request for Alpine versions failed: {e}")
 
         except KeyError as e:
             raise ValueError(f"Error parsing response: {e}")
 
         except Exception as e:
-            raise ValueError(f"Failed to get current Debian versions")
+            raise ValueError(f"Failed to get current Alpine versions")
 
 
 class Debian(Target):
@@ -771,10 +771,10 @@ class Ubuntu(Target):
             response = requests.get("https://endoflife.date/api/ubuntu.json")
 
             # Set the pattern
-            pattern = rf"(\d\d\.\d\d) '{codename.lower().title()} [A-Za-z-_]+'"
+            pattern = rf"{codename.lower().title()} [A-Za-z-_]+"
 
             # Parse versions
-            release = next(v for v in response.json() if re.fullmatch(pattern, v["cycle"]))
+            release = next(v for v in response.json() if re.fullmatch(pattern, v["codename"]))
 
             return re.fullmatch(pattern, release["cycle"])[1]
 
@@ -852,7 +852,7 @@ class Ubuntu(Target):
             response = requests.get("https://endoflife.date/api/ubuntu.json")
 
             # Set the pattern
-            pattern = r"(\d\d\.\d\d) '[A-Za-z-_]+\s?[A-Za-z-_]+'"
+            pattern = r"(\d\d\.\d\d)"
 
             # Parse versions
             versions = [
