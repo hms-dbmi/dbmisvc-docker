@@ -172,12 +172,27 @@ debian10-slim:
     - base_base_build
 
 ubuntu:
-  FROM: "ubuntu:{{ UBUNTU_VERSION|default('20.04') }}"
+  FROM: "ubuntu:{{ UBUNTU_VERSION|default('22.04') }}"
   build_args:
     << : *globals
-    UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('20.04') }}"
+    UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('22.04') }}"
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
     UBUNTU_CODENAME: "{{ UBUNTU_CODENAME|default('focal') }}"
+  requires:
+    - base_meta
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - debian_prips_build
+    - ubuntu_build
+    - base_base_build
+
+ubuntu22.04:
+  FROM: "ubuntu:22.04"
+  build_args:
+    << : *globals
+    UBUNTU_VERSION: 22.04
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.9') }}"
+    UBUNTU_CODENAME: "focal"
   requires:
     - base_meta
     - ubuntu_python_install
@@ -229,5 +244,6 @@ _ALL_:
  - debian11
  - debian10
  - ubuntu
+ - ubuntu22.04
  - ubuntu20.04
  - ubuntu18.04
