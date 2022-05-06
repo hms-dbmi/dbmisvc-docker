@@ -24,7 +24,6 @@ jobs:
       debian-versions: ${{ steps.generate-versions-matrices.outputs.debian-versions }}
       alpine-versions: ${{ steps.generate-versions-matrices.outputs.alpine-versions }}
       ubuntu-versions: ${{ steps.generate-versions-matrices.outputs.ubuntu-versions }}
-      dbmisvc-docker-version: ${{ steps.get-version.outputs.version }}
     steps:
 
     - name: Checkout source
@@ -53,25 +52,9 @@ jobs:
         echo "Ubuntu versions: $(python build.py versions ubuntu)"
         echo "::set-output name=ubuntu-versions::$(python build.py versions ubuntu)"
 
-  version:
-    runs-on: ubuntu-latest
-    outputs:
-      dbmisvc-docker-version: ${{ steps.get-version-tag.outputs.tag }}
-    steps:
-
-    - name: Checkout source
-      uses: actions/checkout@v2
-      with:
-          fetch-depth: 0
-
-    - name: Get Latest Tag
-      id: get-version-tag
-      uses: WyriHaximus/github-action-get-previous-tag@v1
-
   build-debian:
     needs:
       - matrices
-      - version
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -92,14 +75,12 @@ jobs:
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
         push: "${{ github.event.inputs.push }}"
-        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
   build-debian-slim:
     needs:
       - matrices
-      - version
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -120,14 +101,12 @@ jobs:
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
         push: "${{ github.event.inputs.push }}"
-        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
   build-alpine:
     needs:
       - matrices
-      - version
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -151,14 +130,12 @@ jobs:
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
         push: "${{ github.event.inputs.push }}"
-        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
 
   build-ubuntu:
     needs:
       - matrices
-      - version
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -179,6 +156,5 @@ jobs:
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"
         push: "${{ github.event.inputs.push }}"
-        version: "${{ needs.version.outputs.dbmisvc-docker-version }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
