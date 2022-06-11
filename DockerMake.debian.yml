@@ -205,6 +205,8 @@ debian_build:
     debian_pip_build:
       /root/.cache: /root/
   build: |
+
+    # Install required packages
     RUN apt-get update \
         && apt-get install -y --no-install-recommends \
             jq \
@@ -212,6 +214,14 @@ debian_build:
             openssl \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*
+
+    # Install security updates
+    RUN apt-get update \
+        && apt-get install -y --no-install-recommends \
+          unattended-upgrades \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/* \
+        && unattended-upgrade
 
     # Set nginx user
     ENV DBMI_NGINX_USER www-data

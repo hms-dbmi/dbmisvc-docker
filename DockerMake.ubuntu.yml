@@ -431,6 +431,14 @@ ubuntu_pip_build:
       && apt-get clean \
       && rm -rf /var/lib/apt/lists/*
 
+    # Install security updates
+    RUN apt-get update \
+        && apt-get install -y --no-install-recommends \
+          unattended-upgrades \
+        && apt-get clean \
+        && rm -rf /var/lib/apt/lists/* \
+        && unattended-upgrade
+
     # Add requirements
     ADD image-requirements.txt /image-requirements.txt
     RUN pip install -r /image-requirements.txt
