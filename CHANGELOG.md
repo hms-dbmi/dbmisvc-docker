@@ -1,3 +1,10 @@
+# [0.4.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.3...v0.4.0) (2022-06-11)
+
+
+### Features
+
+* **security:** Set Debian-based images to install security patches ([0e548d4](https://github.com/hms-dbmi/dbmisvc-docker/commit/0e548d4b1cd1631e7b8a273be4b26d7329168306))
+
 ## [0.3.3](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.2...v0.3.3) (2022-04-28)
 
 
