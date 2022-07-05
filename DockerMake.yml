@@ -16,10 +16,23 @@ _GLOBALS_: &globals
   NGINX_PKG_RELEASE: "1"
 
 alpine:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine{{ ALPINE_VERSION|default('3.15') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine{{ ALPINE_VERSION|default('3.16') }}"
   build_args:
     << : *globals
-    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.15') }}"
+    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.16') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_prips_build
+    - alpine_build
+    - base_base_build
+
+alpine3.16:
+  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine3.16"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.16
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
   requires:
     - base_meta
@@ -233,6 +246,7 @@ ubuntu18.04:
 
 _ALL_:
  - alpine
+ - alpine3.16
  - alpine3.15
  - alpine3.14
  - alpine3.13
