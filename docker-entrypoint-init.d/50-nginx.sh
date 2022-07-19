@@ -4,26 +4,48 @@ set -e
 # Check for AWS EC2 internal endpoint
 if [[ -n $DBMI_LB ]]; then
 
-    # Set API IP
-    AWS_IMDS_ENDPOINT="http://169.254.169.254"
+    # Determine launch type
+    DBMI_ECS_LAUNCH_TYPE="$(curl -sL ${ECS_CONTAINER_METADATA_URI_V4}/task | jq -r '.LaunchType')"
 
-    # Get the EC2 host IP
-    DBMI_EC2_HOST="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/local-ipv4)"
-    export DBMI_EC2_HOST
-    export ALLOWED_HOSTS="$ALLOWED_HOSTS,$DBMI_EC2_HOST"
+    # Check for ECS type of deployment
+    if [[ $DBMI_ECS_LAUNCH_TYPE == "FARGATE" ]]; then
 
-    # Set the trusted addresses for load balancers to the current subnet
-    DBMI_EC2_MAC="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/mac)"
-    DBMI_LB_SUBNET="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-blocks)"
-    export DBMI_LB_SUBNET
+        # This is being deployed via ECS Fargate
 
-    # Get the address of the VPC's primary DNS resolver
-    DBMI_VPC_CIDR_BLOCK="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-block)"
+        # Get the IP address of this task
+        DBMI_FARGATE_ENI="$(curl -sL ${ECS_CONTAINER_METADATA_URI_V4} | jq -r '.Networks[0].IPv4Addresses[0]')"
+        export DBMI_FARGATE_ENI
+        export ALLOWED_HOSTS="$ALLOWED_HOSTS,$DBMI_FARGATE_ENI"
 
-    # Primary DNS resolver for VPC is first IP in CIDR block plus 2 (e.g. 10.0.0.0/16 -> 10.0.0.2)
-    # This simply uses prips to print all IP addresses in block and extracts the third one.
-    DBMI_FILE_PROXY_DNS=$(prips "${DBMI_VPC_CIDR_BLOCK}" | sed -n 3p)
-    export DBMI_FILE_PROXY_DNS
+        # Get subnet DNS
+        DBMI_FILE_PROXY_DNS="$(curl -sL ${ECS_CONTAINER_METADATA_URI_V4} | jq -r '.Networks[0].DomainNameServers[0]')"
+        export DBMI_FILE_PROXY_DNS
+
+    elif [[ $DBMI_ECS_LAUNCH_TYPE == "EC2" ]]; then
+
+        # This is being deploated via ECS EC2
+
+        # Set API IP
+        AWS_IMDS_ENDPOINT="http://169.254.169.254"
+
+        # Get the EC2 host IP
+        DBMI_EC2_HOST="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/local-ipv4)"
+        export DBMI_EC2_HOST
+        export ALLOWED_HOSTS="$ALLOWED_HOSTS,$DBMI_EC2_HOST"
+
+        # Set the trusted addresses for load balancers to the current subnet
+        DBMI_EC2_MAC="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/mac)"
+        DBMI_LB_SUBNET="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-blocks)"
+        export DBMI_LB_SUBNET
+
+        # Get the address of the VPC's primary DNS resolver
+        DBMI_VPC_CIDR_BLOCK="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-block)"
+
+        # Primary DNS resolver for VPC is first IP in CIDR block plus 2 (e.g. 10.0.0.0/16 -> 10.0.0.2)
+        # This simply uses prips to print all IP addresses in block and extracts the third one.
+        DBMI_FILE_PROXY_DNS=$(prips "${DBMI_VPC_CIDR_BLOCK}" | sed -n 3p)
+        export DBMI_FILE_PROXY_DNS
+    fi
 fi
 
 # Check for self signed
