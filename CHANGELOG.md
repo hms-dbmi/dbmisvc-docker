@@ -1,3 +1,10 @@
+# [0.5.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.4.0...v0.5.0) (2022-07-19)
+
+
+### Features
+
+* **network:** Updated to configure networking for Fargate tasks ([758c658](https://github.com/hms-dbmi/dbmisvc-docker/commit/758c658f7e1ab73108ac33bbff615c53728f6c6d))
+
 # [0.4.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.3.3...v0.4.0) (2022-06-11)
 
 
