@@ -22,6 +22,12 @@ base_base_build:
     ADD image-requirements.txt /image-requirements.txt
     RUN pip install -r /image-requirements.txt
 
+    # Install awscli v2
+    RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+      unzip awscliv2.zip && \
+      ./aws/install && \
+      rm -rf awscliv2.zip awscliv2
+
     # Copy scripts, templates and resources
     ADD docker-entrypoint-templates.d/ /docker-entrypoint-templates.d/
     ADD docker-entrypoint-resources.d/ /docker-entrypoint-resources.d/
