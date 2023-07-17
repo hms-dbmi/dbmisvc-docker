@@ -36,10 +36,10 @@ runs:
   - uses: hmarr/debug-action@v2
 
   - name: Checkout source
-    uses: actions/checkout@v2
+    uses: actions/checkout@v3
 
   - name: Set up Python 3.10
-    uses: actions/setup-python@v2
+    uses: actions/setup-python@v4
     with:
       python-version: "3.10"
 
@@ -51,7 +51,7 @@ runs:
 
   - name: Login to Docker Hub
     if: inputs.push == 'true'
-    uses: docker/login-action@v1
+    uses: docker/login-action@v2
     with:
       username: ${{ inputs.docker-username }}
       password: ${{ inputs.docker-password }}
@@ -62,7 +62,7 @@ runs:
     run: |
       # Determine version
       VERSION=${{ inputs.version }}
-      echo "::set-output name=version::${VERSION:-`python build.py version`}"
+      echo "version=${VERSION:-`python build.py version`}" >> $GITHUB_OUTPUT
 
   - name: Build and push DBMISVC images
     shell: bash

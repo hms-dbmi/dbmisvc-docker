@@ -1,0 +1,151 @@
+name: Test Build
+
+on:
+  workflow_dispatch:
+    inputs:
+      targets:
+        required: false
+        default: "all"
+        type: choice
+        options:
+          - "all"
+          - "debian"
+          - "debian slim"
+          - "alpine"
+          - "ubuntu"
+        description: The target(s) to test build
+
+jobs:
+  matrices:
+    runs-on: ubuntu-latest
+    outputs:
+      python-versions: ${{ steps.generate-versions-matrices.outputs.python-versions }}
+      debian-versions: ${{ steps.generate-versions-matrices.outputs.debian-versions }}
+      alpine-versions: ${{ steps.generate-versions-matrices.outputs.alpine-versions }}
+      ubuntu-versions: ${{ steps.generate-versions-matrices.outputs.ubuntu-versions }}
+    steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
+
+    - name: Set up Python 3.10
+      uses: actions/setup-python@v2
+      with:
+        python-version: "3.10"
+
+    - name: Install Python packages
+      run: |
+        python -m pip install --upgrade pip
+        pip install docker \
+          docopt \
+          gitpython \
+          -e git+https://github.com/b32147/DockerMake.git#egg=DockerMake \
+          rich \
+          pyyaml \
+          python-dateutil \
+          requests
+
+    - name: Generate Python versions matrix
+      id: generate-versions-matrices
+      run: |
+        # Generate versions
+        echo "Python versions: $(python build.py versions python)"
+        echo "::set-output name=python-versions::$(python build.py versions python)"
+        echo "Debian versions: $(python build.py versions debian)"
+        echo "::set-output name=debian-versions::$(python build.py versions debian)"
+        echo "Alpine versions: $(python build.py versions alpine)"
+        echo "::set-output name=alpine-versions::$(python build.py versions alpine)"
+        echo "Ubuntu versions: $(python build.py versions ubuntu)"
+        echo "::set-output name=ubuntu-versions::$(python build.py versions ubuntu)"
+
+    - uses: hmarr/debug-action@v2
+
+  version:
+    runs-on: ubuntu-latest
+    outputs:
+      dbmisvc-docker-version: ${{ steps.get-version-tag.outputs.tag }}
+    steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v2
+
+    - name: Get Latest Tag
+      id: get-version-tag
+      uses: WyriHaximus/github-action-get-previous-tag@v1
+
+  build-debian:
+    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'debian'
+    needs:
+      - matrices
+      - version
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
+        os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
+    steps:
+
+    - uses: hmarr/debug-action@v2
+
+    - name: Output matrix
+      id: output-matrix
+      run: |
+        # Echo to output
+        echo "Matrix versions ('${{ needs.version.outputs.dbmisvc-docker-version }}'): '${{ matrix.python-version }}' / '${{ matrix.os-version }}'"
+
+  build-debian-slim:
+    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'debian slim'
+    needs:
+      - matrices
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
+        os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
+    steps:
+
+    - uses: hmarr/debug-action@v2
+
+    - name: Output matrix
+      id: output-matrix
+      run: |
+        # Echo to output
+        echo "Matrix versions: '${{ matrix.python-version }}' / '${{ matrix.os-version }}'"
+
+  build-alpine:
+    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'alpine'
+    needs:
+      - matrices
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
+        os-version: ${{ fromJson(needs.matrices.outputs.alpine-versions) }}
+    steps:
+
+    - uses: hmarr/debug-action@v2
+
+    - name: Output matrix
+      id: output-matrix
+      run: |
+        # Echo to output
+        echo "Matrix versions: '${{ matrix.python-version }}' / '${{ matrix.os-version }}'"
+
+  build-ubuntu:
+    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'ubuntu'
+    needs:
+      - matrices
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
+        os-version: ${{ fromJson(needs.matrices.outputs.ubuntu-versions) }}
+    steps:
+
+    - uses: hmarr/debug-action@v2
+
+    - name: Output matrix
+      id: output-matrix
+      run: |
+        # Echo to output
+        echo "Matrix versions: '${{ matrix.python-version }}' / '${{ matrix.os-version }}'"
