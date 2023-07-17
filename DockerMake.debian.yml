@@ -217,6 +217,7 @@ debian_build:
             curl \
             openssl \
             unzip \
+            less \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/*
 

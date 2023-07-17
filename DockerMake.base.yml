@@ -19,6 +19,7 @@ base_base_build:
   build: |
 
     # Add requirements
+    RUN pip install --upgrade pip
     ADD image-requirements.txt /image-requirements.txt
     RUN pip install -r /image-requirements.txt
 

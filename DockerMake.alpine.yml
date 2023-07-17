@@ -227,8 +227,14 @@ alpine_build:
     alpine_pip_build:
        /root/.cache: /root/
   build: |
-    RUN apk add -U --no-cache unzip curl bash jq openssl \
-        && rm -rf /var/cache/apk/*
+    RUN apk add -U --no-cache \
+      unzip \
+      curl \
+      bash \
+      jq \
+      less \
+      openssl \
+      && rm -rf /var/cache/apk/*
 
     # Set nginx user
     ENV DBMI_NGINX_USER nginx
