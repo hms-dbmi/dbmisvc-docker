@@ -16,11 +16,37 @@ _GLOBALS_: &globals
   NGINX_PKG_RELEASE: "1"
 
 alpine:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine{{ ALPINE_VERSION|default('3.16') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-alpine{{ ALPINE_VERSION|default('3.18') }}"
   build_args:
     << : *globals
-    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.16') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.18') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_prips_build
+    - alpine_build
+    - base_base_build
+
+alpine3.18:
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-alpine3.18"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.18
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_prips_build
+    - alpine_build
+    - base_base_build
+
+alpine3.17:
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-alpine3.17"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.17
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - alpine_nginx_install
@@ -29,11 +55,11 @@ alpine:
     - base_base_build
 
 alpine3.16:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine3.16"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-alpine3.16"
   build_args:
     << : *globals
     ALPINE_VERSION: 3.16
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - alpine_nginx_install
@@ -42,63 +68,11 @@ alpine3.16:
     - base_base_build
 
 alpine3.15:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine3.15"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-alpine3.15"
   build_args:
     << : *globals
     ALPINE_VERSION: 3.15
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
-  requires:
-    - base_meta
-    - alpine_nginx_install
-    - alpine_prips_build
-    - alpine_build
-    - base_base_build
-
-alpine3.14:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine3.14"
-  build_args:
-    << : *globals
-    ALPINE_VERSION: 3.14
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
-  requires:
-    - base_meta
-    - alpine_nginx_install
-    - alpine_prips_build
-    - alpine_build
-    - base_base_build
-
-alpine3.13:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine3.13"
-  build_args:
-    << : *globals
-    ALPINE_VERSION: 3.13
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
-  requires:
-    - base_meta
-    - alpine_nginx_install
-    - alpine_prips_build
-    - alpine_build
-    - base_base_build
-
-alpine3.12:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine3.12"
-  build_args:
-    << : *globals
-    ALPINE_VERSION: 3.12
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
-  requires:
-    - base_meta
-    - alpine_nginx_install
-    - alpine_prips_build
-    - alpine_build
-    - base_base_build
-
-alpine3.11:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-alpine3.11"
-  build_args:
-    << : *globals
-    ALPINE_VERSION: 3.11
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - alpine_nginx_install
@@ -107,11 +81,24 @@ alpine3.11:
     - base_base_build
 
 debian:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-{{ DEBIAN_CODENAME|default('bullseye') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-{{ DEBIAN_CODENAME|default('bookworm') }}"
   build_args:
     << : *globals
-    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bullseye') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bookworm') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_prips_build
+    - debian_build
+    - base_base_build
+
+debian12:
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-bookworm"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: bookworm
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -120,11 +107,11 @@ debian:
     - base_base_build
 
 debian11:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-bullseye"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-bullseye"
   build_args:
     << : *globals
     DEBIAN_CODENAME: bullseye
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -133,11 +120,11 @@ debian11:
     - base_base_build
 
 debian10:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-buster"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-buster"
   build_args:
     << : *globals
     DEBIAN_CODENAME: buster
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -146,11 +133,24 @@ debian10:
     - base_base_build
 
 debian-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-slim-{{ DEBIAN_CODENAME|default('bullseye') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-slim-{{ DEBIAN_CODENAME|default('bookworm') }}"
   build_args:
     << : *globals
-    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bullseye') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('bookworm') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
+  requires:
+    - base_meta
+    - debian_nginx_install
+    - debian_prips_build
+    - debian_build
+    - base_base_build
+
+debian12-slim:
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-slim-bookworm"
+  build_args:
+    << : *globals
+    DEBIAN_CODENAME: bookworm
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -159,11 +159,11 @@ debian-slim:
     - base_base_build
 
 debian11-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-slim-bullseye"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-slim-bullseye"
   build_args:
     << : *globals
     DEBIAN_CODENAME: bullseye
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -172,11 +172,11 @@ debian11-slim:
     - base_base_build
 
 debian10-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.10') }}-slim-buster"
+  FROM: "python:{{ PYTHON_VERSION|default('3.11') }}-slim-buster"
   build_args:
     << : *globals
     DEBIAN_CODENAME: buster
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -189,7 +189,7 @@ ubuntu:
   build_args:
     << : *globals
     UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('22.04') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
     UBUNTU_CODENAME: "{{ UBUNTU_CODENAME|default('focal') }}"
   requires:
     - base_meta
@@ -204,7 +204,7 @@ ubuntu22.04:
   build_args:
     << : *globals
     UBUNTU_VERSION: 22.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
     UBUNTU_CODENAME: "focal"
   requires:
     - base_meta
@@ -219,7 +219,7 @@ ubuntu20.04:
   build_args:
     << : *globals
     UBUNTU_VERSION: 20.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
     UBUNTU_CODENAME: "focal"
   requires:
     - base_meta
@@ -234,7 +234,7 @@ ubuntu18.04:
   build_args:
     << : *globals
     UBUNTU_VERSION: 18.04
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.10') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.11') }}"
     UBUNTU_CODENAME: "bionic"
   requires:
     - base_meta
@@ -246,15 +246,16 @@ ubuntu18.04:
 
 _ALL_:
  - alpine
+ - alpine3.18
+ - alpine3.17
  - alpine3.16
  - alpine3.15
- - alpine3.14
- - alpine3.13
- - alpine3.12
  - debian-slim
+ - debian12-slim
  - debian11-slim
  - debian10-slim
  - debian
+ - debian12
  - debian11
  - debian10
  - ubuntu

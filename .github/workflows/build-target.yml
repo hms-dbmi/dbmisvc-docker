@@ -20,6 +20,7 @@ on:
         description: The version of Python to build the target for
         required: true
         options:
+        - "3.11"
         - "3.10"
         - "3.9"
         - "3.8"

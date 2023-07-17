@@ -30,10 +30,10 @@ jobs:
     - name: Checkout source
       uses: actions/checkout@v3
 
-    - name: Set up Python 3.10
+    - name: Set up Python 3.11
       uses: actions/setup-python@v4
       with:
-        python-version: "3.10"
+        python-version: "3.11"
 
     - name: Install Python packages
       run: |
@@ -45,13 +45,13 @@ jobs:
       run: |
         # Generate versions
         echo "Python versions: $(python build.py versions python)"
-        echo "::set-output name=python-versions::$(python build.py versions python)"
+        echo "echo "python-versions=$(python build.py versions python)" >> $GITHUB_OUTPUT"
         echo "Debian versions: $(python build.py versions debian)"
-        echo "::set-output name=debian-versions::$(python build.py versions debian)"
+        echo "echo "debian-versions=$(python build.py versions debian)" >> $GITHUB_OUTPUT"
         echo "Alpine versions: $(python build.py versions alpine)"
-        echo "::set-output name=alpine-versions::$(python build.py versions alpine)"
+        echo "echo "alpine-versions=$(python build.py versions alpine)" >> $GITHUB_OUTPUT"
         echo "Ubuntu versions: $(python build.py versions ubuntu)"
-        echo "::set-output name=ubuntu-versions::$(python build.py versions ubuntu)"
+        echo "echo "ubuntu-versions=$(python build.py versions ubuntu)" >> $GITHUB_OUTPUT"
 
   version:
     runs-on: ubuntu-latest
@@ -137,7 +137,7 @@ jobs:
         os-version: ${{ fromJson(needs.matrices.outputs.alpine-versions) }}
         exclude:
           - os-version: "3.12"
-            python-version: "3.10"
+            python-version: "3.11"
     steps:
 
     - name: Checkout source
