@@ -200,4 +200,47 @@ http {
         client_max_body_size 4G;
         server_name _;
     }
+
+    {% if DBMI_SERVICE_DISCOVERY_NAME %}
+    server {
+    {% if DBMI_SSL is defined and DBMI_SSL %}
+        listen {{ DBMI_PORT }} ssl;
+        server_name .{{ DBMI_SERVICE_DISCOVERY_NAME }}.{{ DBMI_SERVICE_DISCOVERY_NAMESPACE }};
+
+        ssl_certificate "{{ DBMI_SSL_PATH }}/{{ DBMI_SERVICE_DISCOVERY_NAME }}.{{ DBMI_SERVICE_DISCOVERY_NAMESPACE }}.crt";
+        ssl_certificate_key "{{ DBMI_SSL_PATH }}/{{ DBMI_SERVICE_DISCOVERY_NAME }}.{{ DBMI_SERVICE_DISCOVERY_NAMESPACE }}.key";
+
+        error_page 497 https://$host:{{ DBMI_PORT }}$request_uri;
+
+    {% else %}
+
+        listen {{ DBMI_PORT }};
+        server_name .{{ DBMI_SERVICE_DISCOVERY_DOMAIN }};
+
+    {% endif %}
+
+        location = /favicon.ico { access_log off; log_not_found off; }
+        location = /robots.txt  { access_log off; log_not_found off; }
+
+    {% if DBMI_FILE_PROXY is defined and DBMI_FILE_PROXY %}
+        include /etc/nginx/conf.d/nginx.proxy.conf;
+    {% endif %}
+
+        location / {
+            proxy_set_header Host $http_host;
+            proxy_set_header Upgrade $http_upgrade;
+            proxy_set_header Connection $proxy_connection;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $proxy_x_forwarded_proto;
+            proxy_set_header X-Forwarded-Ssl $proxy_x_forwarded_ssl;
+            proxy_set_header X-Forwarded-Port $proxy_x_forwarded_port;
+
+            proxy_redirect off;
+            proxy_pass   http://gunicorn;
+        }
+
+        client_max_body_size 4G;
+    }
+    {% endif %}
 }
