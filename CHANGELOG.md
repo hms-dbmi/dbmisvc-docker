@@ -1,3 +1,11 @@
+## [0.5.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.5.0...v0.5.1) (2023-07-17)
+
+
+### Bug Fixes
+
+* **docker:** Installes 'less' package on all images ([6b11702](https://github.com/hms-dbmi/dbmisvc-docker/commit/6b11702688752cf173256324b764dfe861aa131a))
+* **docker:** Moved awscli from Python dependencies to binary installation ([b84a5c2](https://github.com/hms-dbmi/dbmisvc-docker/commit/b84a5c2a1abc459616d9dc195ae5e8b6745d1eba))
+
 # [0.5.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.4.0...v0.5.0) (2022-07-19)
 
 
