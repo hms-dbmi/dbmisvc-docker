@@ -806,7 +806,7 @@ class Ubuntu(Target):
             # Parse versions
             release = next(v for v in response.json() if version == v["cycle"])
 
-            return release["codename"]
+            return release["codename"].lower()
 
         except requests.HTTPError as e:
             print(f"Error: request for Ubuntu versions failed: {e}")
