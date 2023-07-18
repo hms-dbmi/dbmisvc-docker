@@ -803,13 +803,10 @@ class Ubuntu(Target):
             # Build url
             response = requests.get("https://endoflife.date/api/ubuntu.json")
 
-            # Set the pattern
-            pattern = rf"{version} '([A-Z][a-z-_]+)\s?[A-Z][a-z-_]+'"
-
             # Parse versions
-            release = next(v for v in response.json() if re.fullmatch(pattern, v["cycle"]))
+            release = next(v for v in response.json() if version == v["cycle"])
 
-            return re.fullmatch(pattern, release["cycle"])[1].lower()
+            return release["codename"]
 
         except requests.HTTPError as e:
             print(f"Error: request for Ubuntu versions failed: {e}")
