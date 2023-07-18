@@ -445,6 +445,7 @@ ubuntu_pip_build:
 
     # Add requirements
     ADD image-requirements.txt /image-requirements.txt
+    RUN pip install --upgrade pip
     RUN pip install -r /image-requirements.txt
 
 ubuntu_build:

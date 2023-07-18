@@ -202,6 +202,7 @@ debian_pip_build:
 
     # Add requirements
     ADD image-requirements.txt /image-requirements.txt
+    RUN pip install --upgrade pip
     RUN pip install -r /image-requirements.txt
 
 debian_build:
