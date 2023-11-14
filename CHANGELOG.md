@@ -1,3 +1,15 @@
+# [0.6.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.5.1...v0.6.0) (2023-11-14)
+
+
+### Bug Fixes
+
+* **docker:** Set service discovery listener as unencrypted by default, with option to use a self-signed SSL certificate ([13a949f](https://github.com/hms-dbmi/dbmisvc-docker/commit/13a949fc7aee373c9789778f850de76f052fd4b2))
+
+
+### Features
+
+* **docker:** Implemented support for service discovery endpoints ([b9ae9e8](https://github.com/hms-dbmi/dbmisvc-docker/commit/b9ae9e80beb778e9cebcd0f2be053e22978f4ac2))
+
 ## [0.5.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.5.0...v0.5.1) (2023-07-17)
 
 
