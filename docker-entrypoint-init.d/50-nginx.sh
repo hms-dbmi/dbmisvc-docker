@@ -81,28 +81,28 @@ if [[ -n "$DBMI_CREATE_SSL" ]]; then
     openssl genrsa -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" 2048
     openssl req -new -key "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.csr" -passin pass:"${passphrase}" -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
     openssl x509 -req -days 365 -in "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.csr" -signkey "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_APP_DOMAIN}.crt"
+fi
 
-    # Check for service discovery
-    if [[ -n "$DBMI_SERVICE_DISCOVERY_DOMAIN" ]]; then
+# Check for service discovery
+if [[ -n "$DBMI_SERVICE_DISCOVERY_DOMAIN" ]] && [[ -n "$DBMI_SERVICE_DISCOVERY_SSL" ]]; then
 
-        # Set the wildcarded domain we want to use
-        commonname="*.${DBMI_SERVICE_DISCOVERY_DOMAIN}"
+    # Set the wildcarded domain we want to use
+    commonname="*.${DBMI_SERVICE_DISCOVERY_DOMAIN}"
 
-        # A blank passphrase
-        passphrase="$(openssl rand -base64 15)"
-        country=US
-        state=Massachusetts
-        locality=Boston
-        organization=HMS
-        organizationalunit=DBMI
-        email=admin@hms.harvard.edu
+    # A blank passphrase
+    passphrase="$(openssl rand -base64 15)"
+    country=US
+    state=Massachusetts
+    locality=Boston
+    organization=HMS
+    organizationalunit=DBMI
+    email=admin@hms.harvard.edu
 
-        # Generate our Private Key, CSR and Certificate
-        openssl genrsa -out "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.key" 2048
-        openssl req -new -key "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.csr" -passin pass:"${passphrase}" -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
-        openssl x509 -req -days 365 -in "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.csr" -signkey "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.crt"
+    # Generate our Private Key, CSR and Certificate
+    openssl genrsa -out "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.key" 2048
+    openssl req -new -key "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.csr" -passin pass:"${passphrase}" -subj "/C=$country/ST=$state/L=$locality/O=$organization/OU=$organizationalunit/CN=$commonname/emailAddress=$email"
+    openssl x509 -req -days 365 -in "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.csr" -signkey "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.key" -out "${DBMI_SSL_PATH}/${DBMI_SERVICE_DISCOVERY_DOMAIN}.crt"
 
-    fi
 fi
 
 if [[ -n "$DBMI_SSL" ]]; then

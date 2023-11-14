@@ -203,7 +203,7 @@ http {
 
     {% if DBMI_SERVICE_DISCOVERY_NAME %}
     server {
-    {% if DBMI_SSL is defined and DBMI_SSL %}
+    {% if DBMI_SERVICE_DISCOVERY_SSL is defined and DBMI_SERVICE_DISCOVERY_SSL %}
         listen {{ DBMI_PORT }} ssl;
         server_name .{{ DBMI_SERVICE_DISCOVERY_NAME }}.{{ DBMI_SERVICE_DISCOVERY_NAMESPACE }};
 
@@ -214,7 +214,7 @@ http {
 
     {% else %}
 
-        listen {{ DBMI_PORT }};
+        listen 80;
         server_name .{{ DBMI_SERVICE_DISCOVERY_DOMAIN }};
 
     {% endif %}
