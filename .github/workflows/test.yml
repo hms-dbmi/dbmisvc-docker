@@ -26,10 +26,10 @@ jobs:
     steps:
 
     - name: Checkout source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@v2
+      uses: actions/setup-python@v5
       with:
         python-version: "3.11"
 
@@ -58,7 +58,7 @@ jobs:
         echo "Ubuntu versions: $(python build.py versions ubuntu)"
         echo "echo "ubuntu-versions=$(python build.py versions ubuntu)" >> $GITHUB_OUTPUT"
 
-    - uses: hmarr/debug-action@v2
+    - uses: hmarr/debug-action@v3
 
   version:
     runs-on: ubuntu-latest
@@ -67,7 +67,7 @@ jobs:
     steps:
 
     - name: Checkout source
-      uses: actions/checkout@v2
+      uses: actions/checkout@v4
 
     - name: Get Latest Tag
       id: get-version-tag
@@ -85,7 +85,7 @@ jobs:
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
     steps:
 
-    - uses: hmarr/debug-action@v2
+    - uses: hmarr/debug-action@v3
 
     - name: Output matrix
       id: output-matrix
@@ -104,7 +104,7 @@ jobs:
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
     steps:
 
-    - uses: hmarr/debug-action@v2
+    - uses: hmarr/debug-action@v3
 
     - name: Output matrix
       id: output-matrix
@@ -123,7 +123,7 @@ jobs:
         os-version: ${{ fromJson(needs.matrices.outputs.alpine-versions) }}
     steps:
 
-    - uses: hmarr/debug-action@v2
+    - uses: hmarr/debug-action@v3
 
     - name: Output matrix
       id: output-matrix
@@ -142,7 +142,7 @@ jobs:
         os-version: ${{ fromJson(needs.matrices.outputs.ubuntu-versions) }}
     steps:
 
-    - uses: hmarr/debug-action@v2
+    - uses: hmarr/debug-action@v3
 
     - name: Output matrix
       id: output-matrix
