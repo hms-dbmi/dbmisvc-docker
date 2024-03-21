@@ -201,7 +201,7 @@ http {
         server_name _;
     }
 
-    {% if DBMI_SERVICE_DISCOVERY_NAME %}
+    {% if DBMI_SERVICE_DISCOVERY_NAME is defined and DBMI_SERVICE_DISCOVERY_NAME %}
     server {
     {% if DBMI_SERVICE_DISCOVERY_SSL is defined and DBMI_SERVICE_DISCOVERY_SSL %}
         listen {{ DBMI_PORT }} ssl;

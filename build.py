@@ -65,6 +65,7 @@ class Target(object):
     targets = None
     suffix = None
     excluded_versions = []
+    python_excluded_versions = ["3.8"]
 
     def __init__(self, identifier):
         #self.identifier = identifier
@@ -92,6 +93,11 @@ class Target(object):
 
             # Parse versions
             versions = [v["cycle"] for v in response.json() if dateparse(v["eol"]) > datetime.now()]
+
+            # Difference manual EOL versions
+            versions = list(set(versions) - set(cls.python_excluded_versions))
+
+            # Sort them
             versions.sort(key=LooseVersion)
 
             return versions
@@ -503,6 +509,7 @@ class Alpine(Target):
 
     identifier = "alpine"
     version_pattern = r"[3-9]\.[0-9]+"
+    excluded_versions = ["3.16"]
 
     @classmethod
     def get_supported_versions(cls, lts=False):
@@ -554,7 +561,7 @@ class Debian(Target):
 
     identifier = "debian"
     version_pattern = r"([123][0-9]+)"
-    excluded_versions = ["9"]
+    excluded_versions = ["10"]
 
     @classmethod
     def get_version_from_codename(cls, codename, minor_version=False):
@@ -737,7 +744,7 @@ class Ubuntu(Target):
     version_pattern = r"^(18|[2-9][0-9])\.(0[1-9]|1[0-2])$"
 
     # Exclude 14.04 and 16.04 because they are nightmares
-    excluded_versions = ["14.04", "16.04"]
+    excluded_versions = ["18.04"]
 
     @classmethod
     def get_base_image_name(cls, version, python_version):
