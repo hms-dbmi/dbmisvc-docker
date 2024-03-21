@@ -1,7 +1,7 @@
 docker
 docopt
 gitpython
-https://github.com/b32147/DockerMake/archive/refs/tags/v0.8.0.zip#egg=DockerMake
+EnhancedDockerMake
 rich
 pyyaml
 python-dateutil
