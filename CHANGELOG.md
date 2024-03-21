@@ -1,3 +1,11 @@
+## [0.6.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.6.0...v0.6.1) (2024-03-21)
+
+
+### Bug Fixes
+
+* **requirements:** Fixed DockerMake requirement ([48c6888](https://github.com/hms-dbmi/dbmisvc-docker/commit/48c68884771a8c7db8ae9dd1a33874f40396fafb))
+* **targets:** Updated build targets; removed deprecated targets; fixed Nginx configuration ([447aaf7](https://github.com/hms-dbmi/dbmisvc-docker/commit/447aaf72c977112d5daffc91a781c0f3099d284d))
+
 # [0.6.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.5.1...v0.6.0) (2023-11-14)
 
 
