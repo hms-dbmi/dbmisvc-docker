@@ -211,6 +211,8 @@ debian_build:
       /root/.cache: /root/
   build: |
 
+    ARG DEBIAN_CODENAME
+
     # Install required packages
     RUN apt-get update \
         && apt-get install -y --no-install-recommends \
@@ -226,6 +228,9 @@ debian_build:
     RUN apt-get update \
         && apt-get install -y --no-install-recommends \
           unattended-upgrades \
+          debsecan \
+        && apt-get install --no-install-recommends -y \
+          $(debsecan --suite $DEBIAN_CODENAME --format packages --only-fixed) \
         && apt-get clean \
         && rm -rf /var/lib/apt/lists/* \
         && unattended-upgrade

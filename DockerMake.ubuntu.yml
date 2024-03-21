@@ -14,6 +14,8 @@ ubuntu_python_version:
 
     # Determine the GPG key to use
     RUN ["/bin/bash", "-c", "declare -A PGP_KEYS=( \
+      ['3.13']='7169605F62C751356D054A26A821E680E5FA6305' \
+      ['3.12']='7169605F62C751356D054A26A821E680E5FA6305' \
       ['3.11']='a035c8c19219ba821ecea86b64e628f8d684696d' \
       ['3.10']='a035c8c19219ba821ecea86b64e628f8d684696d' \
       ['3.9']='e3ff2839c048b25c084debe9b26995e310250568' \
@@ -109,7 +111,6 @@ ubuntu_python_install:
         --enable-option-checking=fatal \
         --enable-shared \
         --with-system-expat \
-        --with-system-ffi \
         --without-ensurepip \
       && make -j "$(nproc)" \
         LDFLAGS="-Wl,--strip-all" \
@@ -335,6 +336,7 @@ ubuntu_nginx_install:
     ARG NGINX_PKG_RELEASE
 
     RUN set -x \
+        && export UBUNTU_SHORT_CODENAME=$(echo $UBUNTU_CODENAME | cut -d ' ' -f1) \
         && apt-get update \
         && apt-get install --no-install-recommends --no-install-suggests -y gnupg1 ca-certificates \
         && \
@@ -355,22 +357,22 @@ ubuntu_nginx_install:
         apt-get remove --purge --auto-remove -y gnupg1 && rm -rf /var/lib/apt/lists/* \
         && dpkgArch="$(dpkg --print-architecture)" \
         && nginxPackages=" \
-            nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
-            nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
-            nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
-            nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
-            nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_CODENAME} \
+            nginx=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_SHORT_CODENAME} \
+            nginx-module-xslt=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_SHORT_CODENAME} \
+            nginx-module-geoip=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_SHORT_CODENAME} \
+            nginx-module-image-filter=${NGINX_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_SHORT_CODENAME} \
+            nginx-module-njs=${NGINX_VERSION}+${NGINX_NJS_VERSION}-${NGINX_PKG_RELEASE}~${UBUNTU_SHORT_CODENAME} \
         " \
         && case "$dpkgArch" in \
             amd64|arm64) \
         # arches officialy built by upstream
-                echo "deb [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
+                echo "deb [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_SHORT_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
                 && apt-get update \
                 ;; \
             *) \
         # we're on an architecture upstream doesn't officially build for
         # let's build binaries from the published source packages
-                echo "deb-src [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
+                echo "deb-src [signed-by=$NGINX_GPGKEY_PATH] https://nginx.org/packages/mainline/ubuntu/ ${UBUNTU_SHORT_CODENAME} nginx" >> /etc/apt/sources.list.d/nginx.list \
                 \
         # new directory for storing sources and .deb files
                 && tempDir="$(mktemp -d)" \
