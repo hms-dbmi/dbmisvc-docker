@@ -1,3 +1,10 @@
+## [0.6.2](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.6.1...v0.6.2) (2024-07-09)
+
+
+### Bug Fixes
+
+* **init:** Only checks for service discovery if enabled ([f3361b9](https://github.com/hms-dbmi/dbmisvc-docker/commit/f3361b96476436ac601fec6f025e3b31aa46c5ce))
+
 ## [0.6.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.6.0...v0.6.1) (2024-03-21)
 
 
