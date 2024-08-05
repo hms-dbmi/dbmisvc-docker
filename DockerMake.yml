@@ -16,10 +16,23 @@ _GLOBALS_: &globals
   NGINX_PKG_RELEASE: "1"
 
 alpine:
-  FROM: "python:{{ PYTHON_VERSION|default('3.12') }}-alpine{{ ALPINE_VERSION|default('3.19') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.12') }}-alpine{{ ALPINE_VERSION|default('3.20') }}"
   build_args:
     << : *globals
-    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.19') }}"
+    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.20') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.12') }}"
+  requires:
+    - base_meta
+    - alpine_nginx_install
+    - alpine_prips_build
+    - alpine_build
+    - base_base_build
+
+alpine3.20:
+  FROM: "python:{{ PYTHON_VERSION|default('3.12') }}-alpine3.20"
+  build_args:
+    << : *globals
+    ALPINE_VERSION: 3.20
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.12') }}"
   requires:
     - base_meta
@@ -146,12 +159,27 @@ debian11-slim:
     - base_base_build
 
 ubuntu:
-  FROM: "ubuntu:{{ UBUNTU_VERSION|default('22.04') }}"
+  FROM: "ubuntu:{{ UBUNTU_VERSION|default('24.04') }}"
   build_args:
     << : *globals
-    UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('22.04') }}"
+    UBUNTU_VERSION: "{{ UBUNTU_VERSION|default('24.04') }}"
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.12') }}"
-    UBUNTU_CODENAME: "{{ UBUNTU_CODENAME|default('jammy') }}"
+    UBUNTU_CODENAME: "{{ UBUNTU_CODENAME|default('noble') }}"
+  requires:
+    - base_meta
+    - ubuntu_python_install
+    - ubuntu_nginx_install
+    - debian_prips_build
+    - ubuntu_build
+    - base_base_build
+
+ubuntu24.04:
+  FROM: "ubuntu:24.04"
+  build_args:
+    << : *globals
+    UBUNTU_VERSION: 24.04
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.12') }}"
+    UBUNTU_CODENAME: "noble"
   requires:
     - base_meta
     - ubuntu_python_install
@@ -192,6 +220,7 @@ ubuntu20.04:
 
 _ALL_:
  - alpine
+ - alpine3.20
  - alpine3.19
  - alpine3.18
  - alpine3.17
@@ -202,5 +231,6 @@ _ALL_:
  - debian12
  - debian11
  - ubuntu
+ - ubuntu24.04
  - ubuntu22.04
  - ubuntu20.04
