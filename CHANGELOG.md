@@ -1,3 +1,10 @@
+# [0.7.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.6.2...v0.7.0) (2024-10-23)
+
+
+### Features
+
+* **init:** Added support for EC2 IMDSv2 ([dc5064b](https://github.com/hms-dbmi/dbmisvc-docker/commit/dc5064bb9125fa0ec6c3afcbc4ccfae8e022b5bb))
+
 ## [0.6.2](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.6.1...v0.6.2) (2024-07-09)
 
 
