@@ -23,28 +23,39 @@ if [[ -n $DBMI_LB ]]; then
 
     elif [[ $DBMI_ECS_LAUNCH_TYPE == "EC2" ]]; then
 
-        # This is being deploated via ECS EC2
+        # This is being deployed via ECS EC2
 
         # Set API IP
         AWS_IMDS_ENDPOINT="http://169.254.169.254"
 
+        # Check what version of IMDS is required
+        declare -a CURL_ARGS=('-sL')
+        if [[ $(curl "${CURL_ARGS[@]}" -w "%{http_code}\n" ${AWS_IMDS_ENDPOINT}) == "401" ]]; then
+
+            # Get the AWS IMDSv2 session token
+            TOKEN="$(curl "${CURL_ARGS[@]}" -X PUT "${AWS_IMDS_ENDPOINT}/latest/api/token" -H "X-aws-ec2-metadata-token-ttl-seconds: 300")"
+            CURL_ARGS+=('-H' "X-aws-ec2-metadata-token: $TOKEN")
+
+        fi
+
         # Get the EC2 host IP
-        DBMI_EC2_HOST="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/local-ipv4)"
+        DBMI_EC2_HOST="$(curl "${CURL_ARGS[@]}" "${AWS_IMDS_ENDPOINT}/latest/meta-data/local-ipv4")"
         export DBMI_EC2_HOST
         export ALLOWED_HOSTS="$ALLOWED_HOSTS,$DBMI_EC2_HOST"
 
         # Set the trusted addresses for load balancers to the current subnet
-        DBMI_EC2_MAC="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/mac)"
-        DBMI_LB_SUBNET="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-blocks)"
+        DBMI_EC2_MAC="$(curl "${CURL_ARGS[@]}" "${AWS_IMDS_ENDPOINT}/latest/meta-data/mac")"
+        DBMI_LB_SUBNET="$(curl "${CURL_ARGS[@]}" "${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/${DBMI_EC2_MAC}/vpc-ipv4-cidr-blocks")"
         export DBMI_LB_SUBNET
 
         # Get the address of the VPC's primary DNS resolver
-        DBMI_VPC_CIDR_BLOCK="$(curl -sL ${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/"${DBMI_EC2_MAC}"/vpc-ipv4-cidr-block)"
+        DBMI_VPC_CIDR_BLOCK="$(curl "${CURL_ARGS[@]}" "${AWS_IMDS_ENDPOINT}/latest/meta-data/network/interfaces/macs/${DBMI_EC2_MAC}/vpc-ipv4-cidr-block")"
 
         # Primary DNS resolver for VPC is first IP in CIDR block plus 2 (e.g. 10.0.0.0/16 -> 10.0.0.2)
         # This simply uses prips to print all IP addresses in block and extracts the third one.
         DBMI_FILE_PROXY_DNS=$(prips "${DBMI_VPC_CIDR_BLOCK}" | sed -n 3p)
         export DBMI_FILE_PROXY_DNS
+
     fi
 fi
 
