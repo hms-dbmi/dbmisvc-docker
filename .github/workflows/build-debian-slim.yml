@@ -55,10 +55,13 @@ jobs:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
+        release-ref: ["master", "v0.7.1"]
     steps:
 
     - name: Checkout source
       uses: actions/checkout@v4
+      with:
+        ref: ${{ matrix.release-ref }}
 
     - id: build-debian-slim-targets
       name: Build Debian Slim targets
