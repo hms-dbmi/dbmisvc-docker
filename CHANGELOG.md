@@ -1,3 +1,10 @@
+## [0.7.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.7.0...v0.7.1) (2025-03-27)
+
+
+### Bug Fixes
+
+* **dependencies:** Updated gunicorn version ([2b50031](https://github.com/hms-dbmi/dbmisvc-docker/commit/2b50031a65331812e2f847538408a05ae224ddba))
+
 # [0.7.0](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.6.2...v0.7.0) (2024-10-23)
 
 
