@@ -1,3 +1,10 @@
+## [0.7.2](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.7.1...v0.7.2) (2025-07-21)
+
+
+### Bug Fixes
+
+* **images:** Updated Nginx signing key due to deprecation of the old one ([0f8f08e](https://github.com/hms-dbmi/dbmisvc-docker/commit/0f8f08ea5398f7d4e44628bf045b04fc76a0a009))
+
 ## [0.7.1](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.7.0...v0.7.1) (2025-03-27)
 
 

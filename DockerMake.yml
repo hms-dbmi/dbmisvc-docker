@@ -1,7 +1,7 @@
 # Title: dbmisvc-docker
 # Description: Builder for base image to be used for DBMI services
 # Author: HMS DBMI Tech Core
-# Version: 0.7.1
+# Version: 0.7.2
 # Date: 2024-03-21
 
 _SOURCES_:
