@@ -16,6 +16,9 @@ on:
   schedule:
     - cron:  '0 8 * * 1'
 
+permissions:
+  contents: write
+
 jobs:
   matrices:
     runs-on: ubuntu-latest
@@ -73,3 +76,25 @@ jobs:
         source-ref: "${{ matrix.release-ref }}"
         docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
         docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
+
+  record-scheduled-rebuild:
+    if: github.event_name == 'schedule'
+    needs:
+      - build-debian-slim
+    runs-on: ubuntu-latest
+    steps:
+
+    - name: Checkout source
+      uses: actions/checkout@v6
+      with:
+        ref: master
+
+    - name: Record scheduled rebuild
+      run: |
+        mkdir -p .github
+        printf 'Last successful scheduled Debian slim rebuild: %s\n' "$(date -u +'%Y-%m-%dT%H:%M:%SZ')" > .github/scheduled-rebuild.txt
+        git config user.name "github-actions[bot]"
+        git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+        git add .github/scheduled-rebuild.txt
+        git diff --cached --quiet || git commit -m "chore: record scheduled image rebuild [skip ci]"
+        git push
