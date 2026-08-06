@@ -24,7 +24,12 @@ base_base_build:
     RUN pip install -r /image-requirements.txt
 
     # Install awscli v2
-    RUN curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip" && \
+    RUN case "$(uname -m)" in \
+        x86_64|amd64) awsArch=x86_64 ;; \
+        aarch64|arm64) awsArch=aarch64 ;; \
+        *) echo >&2 "unsupported architecture: $(uname -m)" && exit 1 ;; \
+      esac && \
+      curl "https://awscli.amazonaws.com/awscli-exe-linux-${awsArch}.zip" -o "awscliv2.zip" && \
       unzip awscliv2.zip && \
       ./aws/install && \
       rm -rf awscliv2.zip awscliv2

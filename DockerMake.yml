@@ -11,8 +11,8 @@ _SOURCES_:
   - DockerMake.ubuntu.yml
 
 _GLOBALS_: &globals
-  NGINX_VERSION: "1.25.4"
-  NGINX_NJS_VERSION: "0.8.3"
+  NGINX_VERSION: "1.31.3"
+  NGINX_NJS_VERSION: "1.0.0"
   NGINX_PKG_RELEASE: "1"
 
 alpine:
@@ -96,9 +96,7 @@ debian:
 debian13:
   FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-trixie"
   build_args:
-    NGINX_VERSION: "1.31.3"
-    NGINX_NJS_VERSION: "1.0.0"
-    NGINX_PKG_RELEASE: "1"
+    << : *globals
     DEBIAN_CODENAME: trixie
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
   requires:
@@ -150,9 +148,7 @@ debian-slim:
 debian13-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-slim-trixie"
   build_args:
-    NGINX_VERSION: "1.31.3"
-    NGINX_NJS_VERSION: "1.0.0"
-    NGINX_PKG_RELEASE: "1"
+    << : *globals
     DEBIAN_CODENAME: trixie
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
   requires:
