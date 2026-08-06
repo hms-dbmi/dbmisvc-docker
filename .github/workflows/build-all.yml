@@ -21,7 +21,6 @@ jobs:
       python-versions: ${{ steps.generate-versions-matrices.outputs.python-versions }}
       debian-versions: ${{ steps.generate-versions-matrices.outputs.debian-versions }}
       alpine-versions: ${{ steps.generate-versions-matrices.outputs.alpine-versions }}
-      ubuntu-versions: ${{ steps.generate-versions-matrices.outputs.ubuntu-versions }}
     steps:
 
     - name: Checkout source
@@ -47,8 +46,6 @@ jobs:
         echo "debian-versions=$(python build.py versions debian)" >> $GITHUB_OUTPUT
         echo "Alpine versions: $(python build.py versions alpine)"
         echo "alpine-versions=$(python build.py versions alpine)" >> $GITHUB_OUTPUT
-        echo "Ubuntu versions: $(python build.py versions ubuntu)"
-        echo "ubuntu-versions=$(python build.py versions ubuntu)" >> $GITHUB_OUTPUT
 
   build-debian:
     needs:
@@ -124,32 +121,6 @@ jobs:
       uses: ./.github/actions/build-target
       with:
         target: "alpine"
-        os-version: "${{ matrix.os-version }}"
-        python-version: "${{ matrix.python-version }}"
-        repo: "${{ secrets.DBMISVC_REPO }}"
-        push: "${{ github.event_name != 'workflow_dispatch' || github.event.inputs.push == 'true' }}"
-        docker-username: "${{ secrets.DOCKER_HUB_USERNAME }}"
-        docker-password: "${{ secrets.DOCKER_HUB_PASSWORD }}"
-
-  build-ubuntu:
-    needs:
-      - matrices
-    runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
-      matrix:
-        python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
-        os-version: ${{ fromJson(needs.matrices.outputs.ubuntu-versions) }}
-    steps:
-
-    - name: Checkout source
-      uses: actions/checkout@v6
-
-    - id: build-ubuntu-targets
-      name: Build Ubuntu targets
-      uses: ./.github/actions/build-target
-      with:
-        target: "ubuntu"
         os-version: "${{ matrix.os-version }}"
         python-version: "${{ matrix.python-version }}"
         repo: "${{ secrets.DBMISVC_REPO }}"

@@ -12,7 +12,6 @@ on:
           - "debian"
           - "debian slim"
           - "alpine"
-          - "ubuntu"
         description: The target(s) to test build
 
 jobs:
@@ -22,7 +21,6 @@ jobs:
       python-versions: ${{ steps.generate-versions-matrices.outputs.python-versions }}
       debian-versions: ${{ steps.generate-versions-matrices.outputs.debian-versions }}
       alpine-versions: ${{ steps.generate-versions-matrices.outputs.alpine-versions }}
-      ubuntu-versions: ${{ steps.generate-versions-matrices.outputs.ubuntu-versions }}
     steps:
 
     - name: Checkout source
@@ -55,8 +53,6 @@ jobs:
         echo "debian-versions=$(python build.py versions debian)" >> $GITHUB_OUTPUT
         echo "Alpine versions: $(python build.py versions alpine)"
         echo "alpine-versions=$(python build.py versions alpine)" >> $GITHUB_OUTPUT
-        echo "Ubuntu versions: $(python build.py versions ubuntu)"
-        echo "ubuntu-versions=$(python build.py versions ubuntu)" >> $GITHUB_OUTPUT
 
   version:
     runs-on: ubuntu-latest
@@ -115,23 +111,6 @@ jobs:
       matrix:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.alpine-versions) }}
-    steps:
-
-    - name: Output matrix
-      id: output-matrix
-      run: |
-        # Echo to output
-        echo "Matrix versions: '${{ matrix.python-version }}' / '${{ matrix.os-version }}'"
-
-  build-ubuntu:
-    if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'ubuntu'
-    needs:
-      - matrices
-    runs-on: ubuntu-latest
-    strategy:
-      matrix:
-        python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
-        os-version: ${{ fromJson(needs.matrices.outputs.ubuntu-versions) }}
     steps:
 
     - name: Output matrix
