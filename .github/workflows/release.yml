@@ -15,12 +15,12 @@ jobs:
     steps:
 
     - name: Checkout source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Setup node
-      uses: actions/setup-node@v4
+      uses: actions/setup-node@v7
       with:
-        node-version: '20'
+        node-version: '24'
 
     - name: Perform versioning if necessary
       uses: cycjimmy/semantic-release-action@v4

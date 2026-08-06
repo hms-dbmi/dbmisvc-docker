@@ -26,10 +26,10 @@ jobs:
     steps:
 
     - name: Checkout source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Set up Python 3.11
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v6
       with:
         python-version: "3.11"
 
@@ -50,15 +50,13 @@ jobs:
       run: |
         # Generate versions
         echo "Python versions: $(python build.py versions python)"
-        echo "echo "python-versions=$(python build.py versions python)" >> $GITHUB_OUTPUT"
+        echo "python-versions=$(python build.py versions python)" >> $GITHUB_OUTPUT
         echo "Debian versions: $(python build.py versions debian)"
-        echo "echo "debian-versions=$(python build.py versions debian)" >> $GITHUB_OUTPUT"
+        echo "debian-versions=$(python build.py versions debian)" >> $GITHUB_OUTPUT
         echo "Alpine versions: $(python build.py versions alpine)"
-        echo "echo "alpine-versions=$(python build.py versions alpine)" >> $GITHUB_OUTPUT"
+        echo "alpine-versions=$(python build.py versions alpine)" >> $GITHUB_OUTPUT
         echo "Ubuntu versions: $(python build.py versions ubuntu)"
-        echo "echo "ubuntu-versions=$(python build.py versions ubuntu)" >> $GITHUB_OUTPUT"
-
-    - uses: hmarr/debug-action@v3
+        echo "ubuntu-versions=$(python build.py versions ubuntu)" >> $GITHUB_OUTPUT
 
   version:
     runs-on: ubuntu-latest
@@ -67,11 +65,11 @@ jobs:
     steps:
 
     - name: Checkout source
-      uses: actions/checkout@v4
+      uses: actions/checkout@v6
 
     - name: Get Latest Tag
       id: get-version-tag
-      uses: WyriHaximus/github-action-get-previous-tag@v1
+      uses: WyriHaximus/github-action-get-previous-tag@v2
 
   build-debian:
     if: github.event.inputs.targets == 'all' || github.event.inputs.targets == 'debian'
@@ -84,8 +82,6 @@ jobs:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
     steps:
-
-    - uses: hmarr/debug-action@v3
 
     - name: Output matrix
       id: output-matrix
@@ -104,8 +100,6 @@ jobs:
         os-version: ${{ fromJson(needs.matrices.outputs.debian-versions) }}
     steps:
 
-    - uses: hmarr/debug-action@v3
-
     - name: Output matrix
       id: output-matrix
       run: |
@@ -123,8 +117,6 @@ jobs:
         os-version: ${{ fromJson(needs.matrices.outputs.alpine-versions) }}
     steps:
 
-    - uses: hmarr/debug-action@v3
-
     - name: Output matrix
       id: output-matrix
       run: |
@@ -141,8 +133,6 @@ jobs:
         python-version: ${{ fromJson(needs.matrices.outputs.python-versions) }}
         os-version: ${{ fromJson(needs.matrices.outputs.ubuntu-versions) }}
     steps:
-
-    - uses: hmarr/debug-action@v3
 
     - name: Output matrix
       id: output-matrix
