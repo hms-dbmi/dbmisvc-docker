@@ -17,11 +17,11 @@ _GLOBALS_: &globals
   NGINX_PKG_RELEASE: "1"
 
 alpine:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine{{ ALPINE_VERSION|default('3.22') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-alpine{{ ALPINE_VERSION|default('3.22') }}"
   build_args:
     << : *globals
     ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.22') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - alpine_nginx_install
@@ -30,11 +30,11 @@ alpine:
     - base_base_build
 
 alpine3.22:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine3.22"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-alpine3.22"
   build_args:
     << : *globals
     ALPINE_VERSION: 3.22
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - alpine_nginx_install
@@ -43,11 +43,11 @@ alpine3.22:
     - base_base_build
 
 debian:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-{{ DEBIAN_CODENAME|default('trixie') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-{{ DEBIAN_CODENAME|default('trixie') }}"
   build_args:
     << : *globals
     DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('trixie') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -56,11 +56,11 @@ debian:
     - base_base_build
 
 debian13:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-trixie"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-trixie"
   build_args:
     << : *globals
     DEBIAN_CODENAME: trixie
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -69,11 +69,11 @@ debian13:
     - base_base_build
 
 debian12:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-bookworm"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-bookworm"
   build_args:
     << : *globals
     DEBIAN_CODENAME: bookworm
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -82,11 +82,11 @@ debian12:
     - base_base_build
 
 debian-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-slim-{{ DEBIAN_CODENAME|default('trixie') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-slim-{{ DEBIAN_CODENAME|default('trixie') }}"
   build_args:
     << : *globals
     DEBIAN_CODENAME: "{{ DEBIAN_CODENAME|default('trixie') }}"
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -95,11 +95,11 @@ debian-slim:
     - base_base_build
 
 debian13-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-slim-trixie"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-slim-trixie"
   build_args:
     << : *globals
     DEBIAN_CODENAME: trixie
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - debian_nginx_install
@@ -108,11 +108,11 @@ debian13-slim:
     - base_base_build
 
 debian12-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-slim-bookworm"
+  FROM: "python:{{ PYTHON_VERSION|default('3.15') }}-slim-bookworm"
   build_args:
     << : *globals
     DEBIAN_CODENAME: bookworm
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
+    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.15') }}"
   requires:
     - base_meta
     - debian_nginx_install
