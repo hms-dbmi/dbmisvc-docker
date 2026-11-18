@@ -9,16 +9,18 @@ _SOURCES_:
   - DockerMake.alpine.yml
   - DockerMake.debian.yml
 
+# NGINX and njs must be compiled for the same NGINX release.  Alpine 3.22 is
+# the oldest maintained Alpine target that publishes this current pair.
 _GLOBALS_: &globals
-  NGINX_VERSION: "1.31.3"
-  NGINX_NJS_VERSION: "1.0.0"
+  NGINX_VERSION: "1.31.9"
+  NGINX_NJS_VERSION: "1.0.2"
   NGINX_PKG_RELEASE: "1"
 
 alpine:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine{{ ALPINE_VERSION|default('3.20') }}"
+  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine{{ ALPINE_VERSION|default('3.22') }}"
   build_args:
     << : *globals
-    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.20') }}"
+    ALPINE_VERSION: "{{ ALPINE_VERSION|default('3.22') }}"
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
   requires:
     - base_meta
@@ -27,50 +29,11 @@ alpine:
     - alpine_build
     - base_base_build
 
-alpine3.20:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine3.20"
+alpine3.22:
+  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine3.22"
   build_args:
     << : *globals
-    ALPINE_VERSION: 3.20
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
-  requires:
-    - base_meta
-    - alpine_nginx_install
-    - alpine_prips_build
-    - alpine_build
-    - base_base_build
-
-alpine3.19:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine3.19"
-  build_args:
-    << : *globals
-    ALPINE_VERSION: 3.19
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
-  requires:
-    - base_meta
-    - alpine_nginx_install
-    - alpine_prips_build
-    - alpine_build
-    - base_base_build
-
-alpine3.18:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine3.18"
-  build_args:
-    << : *globals
-    ALPINE_VERSION: 3.18
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
-  requires:
-    - base_meta
-    - alpine_nginx_install
-    - alpine_prips_build
-    - alpine_build
-    - base_base_build
-
-alpine3.17:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-alpine3.17"
-  build_args:
-    << : *globals
-    ALPINE_VERSION: 3.17
+    ALPINE_VERSION: 3.22
     PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
   requires:
     - base_meta
@@ -118,19 +81,6 @@ debian12:
     - debian_build
     - base_base_build
 
-debian11:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-bullseye"
-  build_args:
-    << : *globals
-    DEBIAN_CODENAME: bullseye
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
-  requires:
-    - base_meta
-    - debian_nginx_install
-    - debian_prips_build
-    - debian_build
-    - base_base_build
-
 debian-slim:
   FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-slim-{{ DEBIAN_CODENAME|default('trixie') }}"
   build_args:
@@ -170,30 +120,12 @@ debian12-slim:
     - debian_build
     - base_base_build
 
-debian11-slim:
-  FROM: "python:{{ PYTHON_VERSION|default('3.14') }}-slim-bullseye"
-  build_args:
-    << : *globals
-    DEBIAN_CODENAME: bullseye
-    PYTHON_VERSION: "{{ PYTHON_VERSION|default('3.14') }}"
-  requires:
-    - base_meta
-    - debian_nginx_install
-    - debian_prips_build
-    - debian_build
-    - base_base_build
-
 _ALL_:
  - alpine
- - alpine3.20
- - alpine3.19
- - alpine3.18
- - alpine3.17
+ - alpine3.22
  - debian-slim
  - debian13-slim
  - debian12-slim
- - debian11-slim
  - debian
  - debian13
  - debian12
- - debian11
