@@ -1,6 +1,6 @@
 {
   "name": "dbmisvc-docker",
-  "version": "0.7.2",
+  "version": "0.7.3",
   "homepage": "https://github.com/hms-dbmi/dbmisvc-docker",
   "repository": {
     "type": "git",

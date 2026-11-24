@@ -1,3 +1,10 @@
+## [0.7.3](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.7.2...v0.7.3) (2026-11-24)
+
+
+### Bug Fixes
+
+* **images:** rebuild base images for latest upstream updates ([6fb7f44](https://github.com/hms-dbmi/dbmisvc-docker/commit/6fb7f449ca0ef8daf997bc35c3a4045724661d1f))
+
 ## [0.7.2](https://github.com/hms-dbmi/dbmisvc-docker/compare/v0.7.1...v0.7.2) (2025-07-21)
 
 
